@@ -1,9 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main()
 
 {
-	int Option = 0;
+	char Option[60];
 
 	printf("Welcome to iDecipher!\n");
 	printf("Choose an option: \n");
@@ -15,9 +16,24 @@ int main()
 	printf("6 - Show plaintext\n");
 	printf("7 - Help\n");
 	printf("8 - Exit\n");
-	printf("Enter option:  ");
-	scanf("%d", &Option);
-	printf("You chose \%d \n",Option);
+	printf("Enter an option:  ");
+
+	while (atoi(fgets(Option,60,stdin)) != 8)
+	{
+
+		if ((atoi(&Option[0])>=1) && (atoi(&Option[0]) <=8))
+		{
+			printf("You chose \%d \n",atoi(&Option[0]));
+		}
+		else
+		{
+			printf("Try entering a number 1 - 8\n");
+		}
+		printf("Enter an option:  ");
+	}
+
+	printf("Later, dude!\n");
+
 	return 0;
 
 }
