@@ -23,8 +23,8 @@ int main()
 
 		if ((atoi(&Option[0])>=1) && (atoi(&Option[0]) <=8))
 		{
-			// testing - printf("You chose \%d \n",atoi(&Option[0]));
-			return (Option[0]);
+			// printf("[DEBUG] You chose \%d \n",atoi(&Option[0]));
+			option(Option[0]);
 		}
 		else
 		{
@@ -36,5 +36,13 @@ int main()
 	printf("Later, dude!\n");
 
 	return (Option[0]);;
+
+}
+
+int option(choice)
+
+{
+
+
 
 }
