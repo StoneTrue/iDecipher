@@ -5,10 +5,13 @@
 // 4 - help
 // 5 - exit
 //
-//  user chooses option - only can choose 1 - 5, anything else 
+//  Homophonic test case:
+//  Polyphonic test case:
+//  Ceaser shift test case:
+//  user chooses option - only can choose 1 - 5, anything else
 //  results in being asked to enter 1 - 5
-//  1 - enter cipher from stdin & save as user defined file 
-//  2 - read cioher text from user defined file ans save as user 
+//  1 - enter cipher from stdin & save as user defined file
+//  2 - read cioher text from user defined file ans save as user
 //  defined file
 //  3 - analyze file chosen; default is most recent
 //  analysis options are:
@@ -19,8 +22,16 @@
 //  3.4 -  calculate possible keys from frquency analysis
 //  3.5 -  calculate possible keys from user entered key
 //  3.6 -  do a Caeser shift
-//  3.7 -  wheels 
-//  
+//  3.7 -  wheels
+//  3.99 - exit analysis
+//
+//  3.1 develope key from file
+//  3.1.1 - choose file for analysis
+//  3.1.2 - define key character lengh (e.g. 1, 2; engima would be 1 character (E=x), others could be 2 (ER=x)
+//  3.1.3 - list all occurences of key character
+//  3.1.9 - save file for further analysis
+//  3.1.10 - exit back to 3 menu
+
 
 
 
