@@ -23,6 +23,7 @@
 //  3.5 -  calculate possible keys from user entered key
 //  3.6 -  do a Caeser shift
 //  3.7 -  wheels
+//  3.8 -  check for defined plain words e.g. rockyou.txt
 //  3.99 - exit analysis
 //
 //  3.1 develope key from file
@@ -33,11 +34,13 @@
 //  3.1.10 - exit back to 3 menu
 
 
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
+
+void EnterCipherText();
+void Pick (int);
+
+char *ciphertext;
 
 int main()
 
@@ -62,7 +65,7 @@ int main()
 		if ((atoi(&Option[0])>=1) && (atoi(&Option[0]) <=8))
 		{
 			// printf("[DEBUG] You chose \%d \n",atoi(&Option[0]));
-			option(Option[0]);
+			Pick(Option[0]);
 		}
 		else
 		{
@@ -73,14 +76,62 @@ int main()
 
 	printf("Later, dude!\n");
 
-	return (Option[0]);;
+	Option[0];
 
 }
 
-int option(choice)
+void Pick(choice)
 
 {
+	// Top level program control
+	switch (choice)
+	{
+		case '1':
+			EnterCipherText();
+			return;
+		default :
+			printf("DEBUG - switch default\n");
+			return;
+	}
 
+}
 
+void EnterCipherText()
+
+{
+	//  1 - enter cipher from stdin & save as user defined file
+
+	char cipher_buffer[1000];
+	int c;
+	int n = 0;
+	int ciphersize = 0;
+
+	//printf("DEBUG - Enter File\n");
+
+	printf ("Enter your cipher text here: ");
+
+	while (c = getc(stdin) != '\n')
+	{
+		cipher_buffer[n] = c;
+		n = n++;
+	}
+
+	cipher_buffer[n] = '\0';
+
+	ciphersize = n;
+
+	ciphertext = (char *) malloc(ciphersize);
+	// need error check for malloc here
+
+	n = 0;
+
+	while (cipher_buffer[n] <= ciphersize)
+	{
+		//ciphertext = (char *) cipher_buffer[n];
+		putc(cipher_buffer[n],stdout);
+		n = n++;
+	}
+
+	return;
 
 }
