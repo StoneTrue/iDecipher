@@ -36,20 +36,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void Pick (int);
 void EnterCipherText();
-void BasicAnalysis();
+void Pick (int);
 
-char *ciphertext;
-int ciphersize = 0;
-int keysize = 0;
+int *ciphertext;
 
 int main()
 
 {
 	char Option[60];
-
-	//  Add below as "menu constant" to call anytime
 
 	printf("Welcome to iDecipher!\n");
 	printf("Choose an option: \n");
@@ -80,20 +75,18 @@ int main()
 
 	printf("Later, dude!\n");
 
+	Option[0];
+
 }
 
 void Pick(choice)
 
 {
 	// Top level program control
-
 	switch (choice)
 	{
 		case '1':
 			EnterCipherText();
-			return;
-		case '3':
-			BasicAnalysis();
 			return;
 		default :
 			printf("DEBUG - switch default\n");
@@ -104,14 +97,13 @@ void Pick(choice)
 
 void EnterCipherText()
 
-//  1 - enter cipher from stdin & save as user defined file
-
 {
-	char cipher_buffer[1000] = { 0 };
-	char c = 0;
-	int n = 0;
+	//  1 - enter cipher from stdin & save as user defined file
 
-	free (ciphertext);
+	char cipher_buffer[1000];
+	int c = 0;
+	int n = 0;
+	int ciphersize = 0;
 
 	printf ("Enter your cipher text here: ");
 
@@ -126,13 +118,8 @@ void EnterCipherText()
 
 	ciphersize = n;
 
-	ciphertext = (char *) malloc(ciphersize);
-
-	if (ciphertext == NULL)
-	{
-		printf ("Whoa!  Something happened.  Let's try again.");
-		return;
-	}
+	ciphertext = (int *) malloc(ciphersize);
+	// need error check for malloc here
 
 	n = 0;
 
@@ -140,42 +127,13 @@ void EnterCipherText()
 
 	while (n <= ciphersize)
 	{
-		ciphertext[n] = cipher_buffer[n];
-		putc(ciphertext[n],stdout);
+		ciphertext[n] = (int *) cipher_buffer[n];
+		putc( (char *) ciphertext[n],stdout);
 		n++;
 	}
 
 	printf ("\n");
 
-	// Need to save the text entered; user defined name
-
 	return;
 
-}
-
-void BasicAnalysis()
-
-// 3 - Develops key from user defined characteristics and does
-// simple frquency analysis
-// Loops through text ciphertext points at, notes all unique
-// values and counts occurences
-// Saves results in key file
-
-char key[];
-int n = 0;
-
-{
-
-	printf ("DEBUG - let's analyze!\n");
-	for (n = 0, n <= ciphersize, n++)
-	{
-		for (m = 0, m <= keysize, m++)
-		{
-			if (ciphertext[n] != key[m])
-			{
-				key[m] = ciphertext[n];
-				keysize++;
-			}
-		}
-	}
 }
