@@ -178,6 +178,10 @@ void BasicAnalysis()
 	memset (frequency_buffer, 0, char_set_size * sizeof(int) );
 
 	printf ("DEBUG - let's analyze!\n");
+
+
+	// Counts the null at end of ciphertext - need to stop that!
+
 	for (n = 0; n <= ciphersize; n++)
 	{
 		for (m = 0; m <= keysize; m++)
@@ -185,6 +189,7 @@ void BasicAnalysis()
 			if (ciphertext[n] == key_buffer[m])
 			{
 				frequency_buffer[m]++;
+				break;
 			}
 			else
 			{
@@ -202,7 +207,7 @@ void BasicAnalysis()
 
 	printf ("DEBUG - keysize is %d \n",keysize);
 
-	for (n = 0; n<=keysize; n++)
+	for (n = 0; n<keysize; n++)
 	{
 		printf ("DEBUG - Key Character No. %d Is %c & Occurs %d times.\n",( n+1 ),key_buffer[n],( frequency_buffer[n]+1 ));
 	}
