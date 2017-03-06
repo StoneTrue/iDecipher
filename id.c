@@ -35,14 +35,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void Pick (int);
 void EnterCipherText();
 void BasicAnalysis();
 
 char *ciphertext;
-int ciphersize = 0;
-int keysize = 0;
+int char_set_size = 128;	// ASCII character set size assumed
+int ciphersize = 0;		// Might need to be moved?
 
 int main()
 
@@ -111,6 +112,8 @@ void EnterCipherText()
 	char c = 0;
 	int n = 0;
 
+	ciphersize = 0;
+
 	free (ciphertext);
 
 	printf ("Enter your cipher text here: ");
@@ -161,21 +164,47 @@ void BasicAnalysis()
 // values and counts occurences
 // Saves results in key file
 
-char key[];
-int n = 0;
-
 {
 
+	char key_buffer[char_set_size];
+	int frequency_buffer[char_set_size];
+	int n = 0;
+	int m = 0;
+	int keysize = 0;
+
+	// Initialize buffers
+
+	memset (key_buffer, 0, char_set_size * sizeof(char) );
+	memset (frequency_buffer, 0, char_set_size * sizeof(int) );
+
 	printf ("DEBUG - let's analyze!\n");
-	for (n = 0, n <= ciphersize, n++)
+	for (n = 0; n <= ciphersize; n++)
 	{
-		for (m = 0, m <= keysize, m++)
+		for (m = 0; m <= keysize; m++)
 		{
-			if (ciphertext[n] != key[m])
+			if (ciphertext[n] == key_buffer[m])
 			{
-				key[m] = ciphertext[n];
-				keysize++;
+				frequency_buffer[m]++;
+			}
+			else
+			{
+				if (m == keysize)
+				{
+					key_buffer[m] = ciphertext[n];
+					keysize++;
+					break;
+				}
 			}
 		}
 	}
+
+	// Need to allocate key_buffer and frequency_buffer to memory using malloc; structure?
+
+	printf ("DEBUG - keysize is %d \n",keysize);
+
+	for (n = 0; n<=keysize; n++)
+	{
+		printf ("DEBUG - Key Character No. %d Is %c & Occurs %d times.\n",( n+1 ),key_buffer[n],( frequency_buffer[n]+1 ));
+	}
+
 }
