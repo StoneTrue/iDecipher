@@ -36,11 +36,11 @@ void Pick (int);
 void EnterCipherText();
 void BasicAnalysis();
 
-struct Key {			// Key structure:  cipher character, frequency, plain character
+struct Key {			// Pointer to key structure:  cipher character, frequency, plain character
 	char Cipher_Char[128];
 	int Frequency[128];
 	char Plain_Char[128];
-} Key1;
+} *Key1;
 
 int char_set_size = 128;	// ASCII character set size assumed
 char *ciphertext;
@@ -156,7 +156,7 @@ void BasicAnalysis()
 // values and counts occurences
 // Saves results in key file
 
-// TO DO - should the Key be a pointer?  Also, a way to save the key.
+// TO DO - a way to save the key.
 
 {
 
@@ -201,7 +201,7 @@ void BasicAnalysis()
 
 	for (n = 0; n < keysize; n++)
 	{
-		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ),Key1.Cipher_Char[n],( Key1.Frequency[n]+1 ));
+		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), Key1.Cipher_Char[n],( Key1.Frequency[n]+1 ));
 	}
 }
 
