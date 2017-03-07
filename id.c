@@ -1,15 +1,9 @@
-//  Main menu
-// 1 - enter a cipher text from std in (e.g. user types ANDJDBFKSJVN)
-// 2 - read a cipher text from a .txt or other file
-// 3 - analyze a cipher text
-// 4 - help
-// 5 - exit
+//  iDecipher!  a set of cryptographic tools by R. Austin
 //
 //  Homophonic test case:
 //  Polyphonic test case:
 //  Ceaser shift test case:
-//  user chooses option - only can choose 1 - 5, anything else
-//  results in being asked to enter 1 - 5
+//
 //  1 - enter cipher from stdin & save as user defined file
 //  2 - read cioher text from user defined file ans save as user
 //  defined file
@@ -41,8 +35,14 @@ void Pick (int);
 void EnterCipherText();
 void BasicAnalysis();
 
-char *ciphertext;
+struct Key {
+	char Cipher_Char[128];
+	int Frequency[128];
+	char Plain_Char[128];
+};
+
 int char_set_size = 128;	// ASCII character set size assumed
+char *ciphertext;
 int ciphersize = 0;		// Might need to be moved?
 
 int main()
@@ -50,19 +50,11 @@ int main()
 {
 	char Option[60];
 
-	//  Add below as "menu constant" to call anytime
+	// Clean up the menu so it appears 1st and then on return; do NOT type twice in source.
 
 	printf("Welcome to iDecipher!\n");
-	printf("Choose an option: \n");
-	printf("1 - Enter a cipher text\n");
-	printf("2 - Read a cipher text from a file\n");
-	printf("3 - Analyze an entered cipher text\n");
-	printf("4 - Enter a key manually\n");
-	printf("5 - Caeser shift!\n");
-	printf("6 - Show plaintext\n");
-	printf("7 - Help\n");
-	printf("8 - Exit\n");
-	printf("Enter an option:  ");
+	printf("Choose an option, 1 - 8: \n");
+
 
 	while (atoi(fgets(Option,60,stdin)) != 8)
 	{
@@ -76,6 +68,15 @@ int main()
 		{
 			printf("Try entering a number 1 - 8\n");
 		}
+
+		printf("1 - Enter a cipher text\n");
+		printf("2 - Read a cipher text from a file\n");
+		printf("3 - Analyze an entered cipher text\n");
+		printf("4 - Enter a key manually\n");
+		printf("5 - Caeser shift!\n");
+		printf("6 - Show plaintext\n");
+		printf("7 - Help\n");
+		printf("8 - Exit\n");
 		printf("Enter an option:  ");
 	}
 
@@ -125,9 +126,9 @@ void EnterCipherText()
 		n++;
 	}
 
-	cipher_buffer[n] = '\0';
+	cipher_buffer[n] = '\0';	// A null on the end.
 
-	ciphersize = n;
+	ciphersize = n - 1;		// The null at the end is not part of the cipher
 
 	ciphertext = (char *) malloc(ciphersize);
 
@@ -165,9 +166,9 @@ void BasicAnalysis()
 // Saves results in key file
 
 {
-
 	char key_buffer[char_set_size];
 	int frequency_buffer[char_set_size];
+	struct Key *Key1;
 	int n = 0;
 	int m = 0;
 	int keysize = 0;
@@ -177,12 +178,9 @@ void BasicAnalysis()
 	memset (key_buffer, 0, char_set_size * sizeof(char) );
 	memset (frequency_buffer, 0, char_set_size * sizeof(int) );
 
-	printf ("DEBUG - let's analyze!\n");
+	printf ("Let's analyze!\n");
 
-
-	// Counts the null at end of ciphertext - need to stop that!
-
-	for (n = 0; n <= ciphersize; n++)
+	for (n = 0; n < ciphersize; n++)	// avoid counting the null at the end of ciphertext
 	{
 		for (m = 0; m <= keysize; m++)
 		{
@@ -203,13 +201,15 @@ void BasicAnalysis()
 		}
 	}
 
-	// Need to allocate key_buffer and frequency_buffer to memory using malloc; structure?
+	// Need to store the cipher character & frequency as structure / pointer; not big enough to fuss with malloc, but will need to save
+	// Place into structure here or as separate function?  Can we do it above, and then fill unused with NULL?  In that case why mess about
+	// with buffer variables used now?
 
 	printf ("DEBUG - keysize is %d \n",keysize);
 
 	for (n = 0; n<keysize; n++)
 	{
-		printf ("DEBUG - Key Character No. %d Is %c & Occurs %d times.\n",( n+1 ),key_buffer[n],( frequency_buffer[n]+1 ));
+		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ),key_buffer[n],( frequency_buffer[n]+1 ));
 	}
 
 }
