@@ -5,7 +5,7 @@
 //  Ceaser shift test case:
 //
 //  1 - enter cipher from stdin & save as user defined file
-//  2 - read cioher text from user defined file ans save as user
+//  2 - read cipher text from user defined file ans save as user
 //  defined file
 //  3 - analyze file chosen; default is most recent
 //  analysis options are:
@@ -19,7 +19,7 @@
 //  3.8 -  check for defined plain words e.g. rockyou.txt
 //  3.99 - exit analysis
 //
-//  3.1 develope key from file
+//  3.1 develop key from file
 //  3.1.1 - choose file for analysis
 //  3.1.2 - define key character lengh (e.g. 1, 2; engima would be 1 character (E=x), others could be 2 (ER=x)
 //  3.1.3 - list all occurences of key character
@@ -31,37 +31,35 @@
 #include <stdlib.h>
 #include <string.h>
 
+void DisplayMenu();
 void Pick (int);
 void EnterCipherText();
 void BasicAnalysis();
 
-struct Key {
+struct Key {			// Key structure:  cipher character, frequency, plain character
 	char Cipher_Char[128];
 	int Frequency[128];
 	char Plain_Char[128];
-};
+} Key1;
 
 int char_set_size = 128;	// ASCII character set size assumed
 char *ciphertext;
-int ciphersize = 0;		// Might need to be moved?
+int ciphersize = 0;
 
 int main()
 
 {
 	char Option[60];
 
-	// Clean up the menu so it appears 1st and then on return; do NOT type twice in source.
-
 	printf("Welcome to iDecipher!\n");
-	printf("Choose an option, 1 - 8: \n");
 
+	DisplayMenu();
 
 	while (atoi(fgets(Option,60,stdin)) != 8)
 	{
 
 		if ((atoi(&Option[0])>=1) && (atoi(&Option[0]) <=8))
 		{
-			// printf("[DEBUG] You chose \%d \n",atoi(&Option[0]));
 			Pick(Option[0]);
 		}
 		else
@@ -69,15 +67,8 @@ int main()
 			printf("Try entering a number 1 - 8\n");
 		}
 
-		printf("1 - Enter a cipher text\n");
-		printf("2 - Read a cipher text from a file\n");
-		printf("3 - Analyze an entered cipher text\n");
-		printf("4 - Enter a key manually\n");
-		printf("5 - Caeser shift!\n");
-		printf("6 - Show plaintext\n");
-		printf("7 - Help\n");
-		printf("8 - Exit\n");
-		printf("Enter an option:  ");
+		DisplayMenu();
+
 	}
 
 	printf("Later, dude!\n");
@@ -123,12 +114,12 @@ void EnterCipherText()
 	{
 		c = getc(stdin);
 		cipher_buffer[n] = c;
-		n++;
+		n++;				// Should this be ++n?
 	}
 
-	cipher_buffer[n] = '\0';	// A null on the end.
+	cipher_buffer[n] = '\0';		// A null on the end.
 
-	ciphersize = n - 1;		// The null at the end is not part of the cipher
+	ciphersize = n - 1;			// The null at the end is not part of the cipher
 
 	ciphertext = (char *) malloc(ciphersize);
 
@@ -165,35 +156,40 @@ void BasicAnalysis()
 // values and counts occurences
 // Saves results in key file
 
+// TO DO - should the Key be a pointer?  Also, a way to save the key.
+
 {
-	char key_buffer[char_set_size];
-	int frequency_buffer[char_set_size];
-	struct Key *Key1;
+
 	int n = 0;
 	int m = 0;
 	int keysize = 0;
 
-	// Initialize buffers
+	// Intialize the Key structure
 
-	memset (key_buffer, 0, char_set_size * sizeof(char) );
-	memset (frequency_buffer, 0, char_set_size * sizeof(int) );
+	for (n = 0; n < char_set_size; n ++)
+	{
+		Key1.Cipher_Char[n] = 0;
+		Key1.Frequency[n] = 0;
+		Key1.Plain_Char[n] = 0;
+	}
+
 
 	printf ("Let's analyze!\n");
 
-	for (n = 0; n < ciphersize; n++)	// avoid counting the null at the end of ciphertext
+	for (n = 0; n < ciphersize; n++)	// Don't count the null at the end of ciphertext!
 	{
 		for (m = 0; m <= keysize; m++)
 		{
-			if (ciphertext[n] == key_buffer[m])
+			if (ciphertext[n] == Key1.Cipher_Char[m])
 			{
-				frequency_buffer[m]++;
+				Key1.Frequency[m]++;
 				break;
 			}
 			else
 			{
 				if (m == keysize)
 				{
-					key_buffer[m] = ciphertext[n];
+					Key1.Cipher_Char[m] = ciphertext[n];
 					keysize++;
 					break;
 				}
@@ -201,15 +197,28 @@ void BasicAnalysis()
 		}
 	}
 
-	// Need to store the cipher character & frequency as structure / pointer; not big enough to fuss with malloc, but will need to save
-	// Place into structure here or as separate function?  Can we do it above, and then fill unused with NULL?  In that case why mess about
-	// with buffer variables used now?
-
 	printf ("DEBUG - keysize is %d \n",keysize);
 
-	for (n = 0; n<keysize; n++)
+	for (n = 0; n < keysize; n++)
 	{
-		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ),key_buffer[n],( frequency_buffer[n]+1 ));
+		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ),Key1.Cipher_Char[n],( Key1.Frequency[n]+1 ));
 	}
-
 }
+
+void DisplayMenu()
+
+//  Displays the main menu
+
+{
+	printf("1 - Enter a cipher text\n");
+	printf("2 - Read a cipher text from a file\n");
+	printf("3 - Analyze an entered cipher text\n");
+	printf("4 - Enter a key manually\n");
+	printf("5 - Caeser shift!\n");
+	printf("6 - Show plaintext\n");
+	printf("7 - Help\n");
+	printf("8 - Exit\n");
+	printf("Enter an option, 1-8:  ");
+	return;
+}
+
