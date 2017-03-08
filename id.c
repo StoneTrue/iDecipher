@@ -27,6 +27,12 @@
 //  3.1.10 - exit back to 3 menu
 //  
 //  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
+//
+//  TO DO:
+//  Rationalize all names:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr,
+//  Eliminate all global variables (or as many as possible)
+//  Change error trap in main to be a function per below
+//  Use structures for ciphertext, ciphersize, and key (should this be one or two?)
 
 
 #include <stdio.h>
