@@ -25,6 +25,8 @@
 //  3.1.3 - list all occurences of key character
 //  3.1.9 - save file for further analysis
 //  3.1.10 - exit back to 3 menu
+//  
+//  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 
 
 #include <stdio.h>
@@ -35,15 +37,21 @@ void DisplayMenu();
 void Pick (int);
 void EnterCipherText();
 void BasicAnalysis();
+void Manual_Key_Entry();
+void Display_Plaintext();
 
-struct Key {			// Pointer to key structure:  cipher character, frequency, plain character
+struct Key {			// Key structure:  cipher character, frequency, plain character
 	char Cipher_Char[128];
 	int Frequency[128];
 	char Plain_Char[128];
-} *Key1;
+} Key1;
+
+struct Key *Key_Pointer1;	// Key pointer; might be better to return from function vs. global?
+
+int keysize = 0;		// Keysize; might be better to return from function vs. global?
 
 int char_set_size = 128;	// ASCII character set size assumed
-char *ciphertext;
+char *ciphertext;		// Cipher text pointer; might be better to return from function vs. global?
 int ciphersize = 0;
 
 int main()
@@ -87,6 +95,9 @@ void Pick(choice)
 			return;
 		case '3':
 			BasicAnalysis();
+			return;
+		case '4':
+			Manual_Key_Entry();
 			return;
 		default :
 			printf("DEBUG - switch default\n");
@@ -154,15 +165,12 @@ void BasicAnalysis()
 // simple frquency analysis
 // Loops through text ciphertext points at, notes all unique
 // values and counts occurences
-// Saves results in key file
-
-// TO DO - a way to save the key.
+// Results in defining global key pointer
+// TO DO - add ability to choose number of characters per cipher character, e.g. AXDE, is it A, X, D, E or AX, DE?
 
 {
-
 	int n = 0;
 	int m = 0;
-	int keysize = 0;
 
 	// Intialize the Key structure
 
@@ -197,12 +205,54 @@ void BasicAnalysis()
 		}
 	}
 
+	Key_Pointer1 = &Key1;			// Save the Key as a pointer for future reference.
+
 	printf ("DEBUG - keysize is %d \n",keysize);
 
 	for (n = 0; n < keysize; n++)
 	{
-		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), Key1.Cipher_Char[n],( Key1.Frequency[n]+1 ));
+		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), Key_Pointer1->Cipher_Char[n],( Key_Pointer1->Frequency[n]+1 ));
 	}
+}
+
+
+void Manual_Key_Entry()
+
+// User manually enters a plaint for each cipher character and displays plaintext
+// How to do this via the command line?  Display whole list and then ask one at a time?
+// Display_Plaintext will be a separate function
+
+{
+
+	int n = 0;
+
+	printf ("OK, this is the hard way.\n");
+	printf ("Let's start by printing all we know:\n");
+	for (n = 0; n < keysize; n++)
+	{
+		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), Key_Pointer1->Cipher_Char[n],( Key_Pointer1->Frequency[n]+1 ));
+	}
+	
+	printf ("\nNow let's go over this line by line...\n");
+	
+	for (n = 0; n < keysize; n++)
+	{
+		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), Key_Pointer1->Cipher_Char[n],( Key_Pointer1->Frequency[n]+1 ));
+		printf ("What do you think the plain character is?  ");
+		Key1.Plain_Char[n] = getc(stdin);		//Need to error trap this; only one ASCII char!
+		printf ("DEBUG - you entered %c\n", Key_Pointer1->Plain_Char[n]);
+	}
+
+}
+
+void Display_Plaintext()
+
+// Function to display plaintext for a given cipher text & key
+// Note from VBA work:  this is a heavily used function!
+// Also will need to output plaintext to various tools like frequency comparison & plain word check
+
+{
+
 }
 
 void DisplayMenu()
