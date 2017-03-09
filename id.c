@@ -28,8 +28,10 @@
 //  
 //  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 //
+//  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr,
+//
 //  TO DO:
-//  Rationalize all names:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr,
+//
 //  Eliminate all global variables (or as many as possible)
 //  Change error trap in main to be a function per below
 //  Use structures for ciphertext, ciphersize, and key (should this be one or two?)
@@ -39,30 +41,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-void DisplayMenu();
+void Display_Menu();
 void Main_Switch (int);
-void * EnterCipherText();
-void BasicAnalysis();
+void * Enter_Cipher_Text();
+void Basic_Analysis();
 void Manual_Key_Entry();
 void Display_Plaintext();
 
 struct key {			// Key structure:  cipher character, frequency, plain character, keysize; global declaration
-	char Cipher_Char[128];
-	int Frequency[128];
-	char Plain_Char[128];
+	char cipherchar[128];
+	int frequency[128];
+	char plainchar[128];
 	//int keysize;
 } Key1;				// Key1 will need to be a return
 
 struct ciphertext {		// Cipher text structure:  cipher pointer & size.
-	char *Ciphertext_Ptr;
-	int Ciphersize;
+	char *ciphertextptr;
+	int ciphersize;
 };
 
-struct key *Key_Pointer1;	// Key pointer; change to return from function vs. global
+struct key *KeyPointer1;	// Key pointer; change to return from function vs. global
 
-int keysize = 0;		// Keysize; change to return from function vs. global
+//int Keysize = 0;		// Keysize; change to return from function vs. global
 
-int char_set_size = 128;	// ASCII character set size assumed; this needs to be global for now
+int CharSiteSizeGlob = 128;	// ASCII character set size assumed; this needs to be global for now
 //int ciphersize = 0;
 
 int main()
@@ -72,7 +74,7 @@ int main()
 
 	printf("Welcome to iDecipher!\n");
 
-	DisplayMenu();
+	Display_Menu();
 
 	// Error trap; update as a function, Error_Trap(value,lower ascii, upper ascii)
 
@@ -88,7 +90,7 @@ int main()
 			printf("Try entering a number 1 - 8\n");
 		}
 
-		DisplayMenu();
+		Display_Menu();
 
 	}
 
@@ -104,10 +106,10 @@ void Main_Switch(choice)
 	switch (choice)
 	{
 		case '1':
-			EnterCipherText();
+			Enter_Cipher_Text();
 			return;
 		case '3':
-			BasicAnalysis();
+			Basic_Analysis();
 			return;
 		case '4':
 			Manual_Key_Entry();
@@ -119,41 +121,41 @@ void Main_Switch(choice)
 
 }
 
-void * EnterCipherText()
+void * Enter_Cipher_Text()
 
 //  1 - enter cipher from stdin, return a pointer & save as user defined file
 
 {
-	char cipher_buffer[1000] = { 0 };
+	char CipherBuffer[1000] = { 0 };
 	char c = 0;
 	int n = 0;
 
 	struct ciphertext Cipher1;	// Local variable to build out
 
-	struct ciphertext *Cipher1_Ptr;	// Pointer for ciphertext to return
+	struct ciphertext *Cipher1Ptr;	// Pointer for ciphertext to return
 	
 	// char *ciphertext;		// Cipher text pointer; function returns this pointer
 
-	Cipher1.Ciphersize = 0;
+	Cipher1.ciphersize = 0;
 
-	//free (Cipher1.Ciphertext_Ptr);
+	//free (Cipher1.ciphertextptr);
 
 	printf ("Enter your cipher text here: ");
 
 	while (c != '\n')
 	{
 		c = getc(stdin);
-		cipher_buffer[n] = c;
+		CipherBuffer[n] = c;
 		n++;				// Should this be ++n?
 	}
 
-	cipher_buffer[n] = '\0';			// A null on the end.
+	CipherBuffer[n] = '\0';			// A null on the end.
 
-	Cipher1.Ciphersize = n - 1;			// The null at the end is not part of the cipher
+	Cipher1.ciphersize = n - 1;			// The null at the end is not part of the cipher
 
-	Cipher1.Ciphertext_Ptr = (char *) malloc(Cipher1.Ciphersize);
+	Cipher1.ciphertextptr = (char *) malloc(Cipher1.ciphersize);
 
-	if (Cipher1.Ciphertext_Ptr == NULL)
+	if (Cipher1.ciphertextptr == NULL)
 	{
 		printf ("Whoa!  Something happened.  Let's try again.");
 		return;
@@ -163,10 +165,10 @@ void * EnterCipherText()
 
 	printf ("You entered: ");
 
-	while (n <= Cipher1.Ciphersize)
+	while (n <= Cipher1.ciphersize)
 	{
-		Cipher1.Ciphertext_Ptr[n] = cipher_buffer[n];
-		putc(Cipher1.Ciphertext_Ptr[n],stdout);
+		Cipher1.ciphertextptr[n] = CipherBuffer[n];
+		putc(Cipher1.ciphertextptr[n],stdout);
 		n++;
 	}
 
@@ -174,15 +176,15 @@ void * EnterCipherText()
 
 	// Need to save the text entered; user defined name
 
-	Cipher1_Ptr = &Cipher1;
+	Cipher1Ptr = &Cipher1;
 
-	printf ("DEBUG - Cipher Pointer is at: 0x%x\n", Cipher1_Ptr);
+	printf ("DEBUG - Cipher Pointer is at: 0x%x\n", Cipher1Ptr);
 
-	return Cipher1_Ptr;
+	return Cipher1Ptr;
 
 }
 
-void BasicAnalysis()
+void Basic_Analysis()
 
 // 3 - Develops key from user defined characteristics and does
 // simple frquency analysis
@@ -197,11 +199,11 @@ void BasicAnalysis()
 
 	// Intialize the Key structure
 
-//	for (n = 0; n < char_set_size; n ++)
+//	for (n = 0; n < CharSiteSizeGlob; n ++)
 //	{
-//		Key1.Cipher_Char[n] = 0;
-//		Key1.Frequency[n] = 0;
-//		Key1.Plain_Char[n] = 0;
+//		Key1.cipherchar[n] = 0;
+//		Key1.frequency[n] = 0;
+//		Key1.plainchar[n] = 0;
 //	}
 
 
@@ -211,16 +213,16 @@ void BasicAnalysis()
 //	{
 //		for (m = 0; m <= keysize; m++)
 //		{
-//			if (ciphertext[n] == Key1.Cipher_Char[m])
+//			if (ciphertext[n] == Key1.cipherchar[m])
 //			{
-//				Key1.Frequency[m]++;
+//				Key1.frequency[m]++;
 //				break;
 //			}
 //			else
 //			{
 //				if (m == keysize)
 //				{
-//					Key1.Cipher_Char[m] = ciphertext[n];
+//					Key1.cipherchar[m] = ciphertext[n];
 //					keysize++;
 //					break;
 //				}
@@ -228,13 +230,13 @@ void BasicAnalysis()
 //		}
 //	}
 
-//	Key_Pointer1 = &Key1;			// Save the Key as a pointer for future reference.
+//	KeyPointer1 = &Key1;			// Save the Key as a pointer for future reference.
 
 //	printf ("DEBUG - keysize is %d \n",keysize);
 
 //	for (n = 0; n < keysize; n++)
 //	{
-//		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), Key_Pointer1->Cipher_Char[n],( Key_Pointer1->Frequency[n]+1 ));
+//		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
 //	}
 }
 
@@ -253,17 +255,17 @@ void Manual_Key_Entry()
 	printf ("Let's start by printing all we know:\n");
 	for (n = 0; n < keysize; n++)
 	{
-		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), Key_Pointer1->Cipher_Char[n],( Key_Pointer1->Frequency[n]+1 ));
+		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
 	}
 	
 	printf ("\nNow let's go over this line by line...\n");
 	
 	for (n = 0; n < keysize; n++)
 	{
-		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), Key_Pointer1->Cipher_Char[n],( Key_Pointer1->Frequency[n]+1 ));
+		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
 		printf ("What do you think the plain character is?  ");
-		Key1.Plain_Char[n] = getc(stdin);		//Need to error trap this; only one ASCII char!
-		printf ("DEBUG - you entered %c\n", Key_Pointer1->Plain_Char[n]);
+		Key1.plainchar[n] = getc(stdin);		//Need to error trap this; only one ASCII char!
+		printf ("DEBUG - you entered %c\n", KeyPointer1->plainchar[n]);
 	}
 
 }
@@ -278,7 +280,7 @@ void Display_Plaintext()
 
 }
 
-void DisplayMenu()
+void Display_Menu()
 
 //  Displays the main menu
 
