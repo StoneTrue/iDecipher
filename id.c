@@ -33,8 +33,7 @@
 //  TO DO:
 //
 //  Eliminate all global variables (or as many as possible)
-//  Change error trap in main to be a function per below
-//  Use structures for ciphertext, ciphersize, and key (should this be one or two?)
+//  Use structures for ciphertext, ciphersize, and key
 
 
 #include <stdio.h>
@@ -47,12 +46,13 @@ void * Enter_Cipher_Text();
 void Basic_Analysis();
 void Manual_Key_Entry();
 void Display_Plaintext();
+int Error_Trap(int, int, int);
 
 struct key {			// Key structure:  cipher character, frequency, plain character, keysize; global declaration
 	char cipherchar[128];
 	int frequency[128];
 	char plainchar[128];
-	//int keysize;
+	int keysize;
 } Key1;				// Key1 will need to be a return
 
 struct ciphertext {		// Cipher text structure:  cipher pointer & size.
@@ -62,10 +62,7 @@ struct ciphertext {		// Cipher text structure:  cipher pointer & size.
 
 struct key *KeyPointer1;	// Key pointer; change to return from function vs. global
 
-//int Keysize = 0;		// Keysize; change to return from function vs. global
-
 int CharSiteSizeGlob = 128;	// ASCII character set size assumed; this needs to be global for now
-//int ciphersize = 0;
 
 int main()
 
@@ -73,29 +70,21 @@ int main()
 	char Option[60];
 
 	printf("Welcome to iDecipher!\n");
-
 	Display_Menu();
 
-	// Error trap; update as a function, Error_Trap(value,lower ascii, upper ascii)
-
-	while (atoi(fgets(Option,60,stdin)) != 8)
+	while (1) 
 	{
-
-		if ((atoi(&Option[0])>=1) && (atoi(&Option[0]) <=8))
+		if ( (Error_Trap(atoi(fgets(Option,60,stdin)), 1, 8) ) == 1)
 		{
 			Main_Switch(Option[0]);
+			Display_Menu();
 		}
 		else
-		{
+		{				
 			printf("Try entering a number 1 - 8\n");
+			Display_Menu();
 		}
-
-		Display_Menu();
-
 	}
-
-	printf("Later, dude!\n");
-
 }
 
 void Main_Switch(choice)
@@ -108,14 +97,17 @@ void Main_Switch(choice)
 		case '1':
 			Enter_Cipher_Text();
 			return;
-		case '3':
-			Basic_Analysis();
-			return;
-		case '4':
-			Manual_Key_Entry();
-			return;
+		//case '3':
+		//	Basic_Analysis();
+		//	return;
+		//case '4':
+		//	Manual_Key_Entry();
+		//	return;
+		case '8':
+			printf("Later, Dude!\n");
+			exit(0);		
 		default :
-			printf("DEBUG - switch default\n");
+			printf("\nDEBUG - switch default\n");
 			return;
 	}
 
@@ -134,22 +126,21 @@ void * Enter_Cipher_Text()
 
 	struct ciphertext *Cipher1Ptr;	// Pointer for ciphertext to return
 	
-	// char *ciphertext;		// Cipher text pointer; function returns this pointer
-
 	Cipher1.ciphersize = 0;
+	Cipher1.ciphertextptr = NULL;	
 
-	//free (Cipher1.ciphertextptr);
+	free (Cipher1.ciphertextptr);
 
 	printf ("Enter your cipher text here: ");
 
 	while (c != '\n')
 	{
 		c = getc(stdin);
-		CipherBuffer[n] = c;
-		n++;				// Should this be ++n?
+		CipherBuffer[n] = c;	
+		n++;					// TO DO:  Should this be ++n?
 	}
 
-	CipherBuffer[n] = '\0';			// A null on the end.
+	CipherBuffer[n] = '\0';				// A null on the end.
 
 	Cipher1.ciphersize = n - 1;			// The null at the end is not part of the cipher
 
@@ -157,13 +148,13 @@ void * Enter_Cipher_Text()
 
 	if (Cipher1.ciphertextptr == NULL)
 	{
-		printf ("Whoa!  Something happened.  Let's try again.");
+		printf ("Whoa!  Something happened.  Let's try again.\n");
 		return;
 	}
 
 	n = 0;
 
-	printf ("You entered: ");
+	printf ("\nYou entered: ");
 
 	while (n <= Cipher1.ciphersize)
 	{
@@ -174,7 +165,7 @@ void * Enter_Cipher_Text()
 
 	printf ("\n");
 
-	// Need to save the text entered; user defined name
+	// TO DO:  Need to save the text entered; user defined name
 
 	Cipher1Ptr = &Cipher1;
 
@@ -246,29 +237,30 @@ void Manual_Key_Entry()
 // User manually enters a plaint for each cipher character and displays plaintext
 // How to do this via the command line?  Display whole list and then ask one at a time?
 // Display_Plaintext will be a separate function
-
 {
-
-	int n = 0;
-
-	printf ("OK, this is the hard way.\n");
-	printf ("Let's start by printing all we know:\n");
-	for (n = 0; n < keysize; n++)
-	{
-		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
-	}
-	
-	printf ("\nNow let's go over this line by line...\n");
-	
-	for (n = 0; n < keysize; n++)
-	{
-		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
-		printf ("What do you think the plain character is?  ");
-		Key1.plainchar[n] = getc(stdin);		//Need to error trap this; only one ASCII char!
-		printf ("DEBUG - you entered %c\n", KeyPointer1->plainchar[n]);
-	}
-
 }
+//{
+
+//	int n = 0;
+
+//	printf ("OK, this is the hard way.\n");
+//	printf ("Let's start by printing all we know:\n");
+//	for (n = 0; n < keysize; n++)
+//	{
+//	printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
+//	}
+	
+//	printf ("\nNow let's go over this line by line...\n");
+	
+//	for (n = 0; n < keysize; n++)
+//	{
+//	printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
+//		printf ("What do you think the plain character is?  ");
+//		Key1.plainchar[n] = getc(stdin);			//Need to error trap this; only one ASCII char!
+//		printf ("DEBUG - you entered %c\n", KeyPointer1->plainchar[n]);
+//	}
+
+//}
 
 void Display_Plaintext()
 
@@ -285,15 +277,34 @@ void Display_Menu()
 //  Displays the main menu
 
 {
-	printf("1 - Enter a cipher text\n");
+	printf("\n1 - Enter a cipher text\n");
 	printf("2 - Read a cipher text from a file\n");
 	printf("3 - Analyze an entered cipher text\n");
 	printf("4 - Enter a key manually\n");
 	printf("5 - Caeser shift!\n");
 	printf("6 - Show plaintext\n");
 	printf("7 - Help\n");
-	printf("8 - Exit\n");
+	printf("8 - Exit\n\n");
 	printf("Enter an option, 1-8:  ");
 	return;
+}
+
+int Error_Trap(Test, Lower_Bound, Upper_Bound)
+
+//  Tests user input against upper and lower bounds; returns 1 if good & 0 if bad
+
+{
+	int Error = 0;		// Declare & initialize local variable	
+
+	if (Test >= Lower_Bound && Test <= Upper_Bound)
+	{
+		Error = 1;
+	}
+	else
+	{	
+		Error = 0;
+	}
+
+	return Error;
 }
 
