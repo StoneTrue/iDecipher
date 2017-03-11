@@ -110,7 +110,6 @@ void Main_Switch(choice)
 			printf("\nDEBUG - switch default\n");
 			return;
 	}
-
 }
 
 void * Enter_Cipher_Text()
@@ -172,7 +171,6 @@ void * Enter_Cipher_Text()
 	printf ("DEBUG - Cipher Pointer is at: 0x%x\n", Cipher1Ptr);
 
 	return Cipher1Ptr;
-
 }
 
 void * Basic_Analysis(Cipher1)
@@ -189,7 +187,7 @@ void * Basic_Analysis(Cipher1)
 	int m = 0;
 
 	struct key Key1;
-	struct * key KeyPtr1;
+	struct key *KeyPtr1;
 
 	// Intialize the Key structure
 
@@ -203,35 +201,37 @@ void * Basic_Analysis(Cipher1)
 
 	printf ("Let's analyze!\n");
 
-//	for (n = 0; n < ciphersize; n++)	// Don't count the null at the end of ciphertext!
-//	{
-//		for (m = 0; m <= keysize; m++)
-//		{
-//			if (ciphertext[n] == Key1.cipherchar[m])
-//			{
-//				Key1.frequency[m]++;
-//				break;
-//			}
-//			else
-//			{
-//				if (m == keysize)
-//				{
-//					Key1.cipherchar[m] = ciphertext[n];
-//					keysize++;
-//					break;
-//				}
-//			}
-//		}
-//	}
+	for (n = 0; n < Cipher1.ciphersize; n++)	// Don't count the null at the end of ciphertext!
+	{
+		for (m = 0; m <= Key1.keysize; m++)
+		{
+			if (Cipher1.ciphertext[n] == Key1.cipherchar[m])
+			{
+				Key1.frequency[m]++;
+				break;
+			}
+			else
+			{
+				if (m == Key1.keysize)
+				{
+					Key1.cipherchar[m] = Cipher1.ciphertext[n];
+					Key1.keysize++;
+					break;
+				}
+			}
+		}
+	}
 
-//	KeyPointer1 = &Key1;			// Save the Key as a pointer for future reference.
+	KeyPtr1 = &Key1;			// Save the Key as a pointer for future reference.
 
-//	printf ("DEBUG - keysize is %d \n",keysize);
+	printf ("\nDEBUG - keysize is %d \n", KeyPtr1 -> keysize);
 
-//	for (n = 0; n < keysize; n++)
-//	{
-//		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
-//	}
+	for (n = 0; n < Key1.keysize; n++
+	{
+		printf ("\nDEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPtr1->cipherchar[n],( KeyPtr1->frequency[n]+1 ));
+	}
+
+	return KeyPtr1;
 }
 
 
