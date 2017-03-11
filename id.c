@@ -25,7 +25,7 @@
 //  3.1.3 - list all occurences of key character
 //  3.1.9 - save file for further analysis
 //  3.1.10 - exit back to 3 menu
-//  
+//
 //  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 //
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr,
@@ -43,7 +43,7 @@
 void Display_Menu();
 void Main_Switch (int);
 void * Enter_Cipher_Text();
-void Basic_Analysis();
+void * Basic_Analysis(* ciphertext);
 void Manual_Key_Entry();
 void Display_Plaintext();
 int Error_Trap(int, int, int);
@@ -53,14 +53,14 @@ struct key {			// Key structure:  cipher character, frequency, plain character, 
 	int frequency[128];
 	char plainchar[128];
 	int keysize;
-} Key1;				// Key1 will need to be a return
+};				// Key1 will need to be a return
 
 struct ciphertext {		// Cipher text structure:  cipher pointer & size.
 	char *ciphertextptr;
 	int ciphersize;
 };
 
-struct key *KeyPointer1;	// Key pointer; change to return from function vs. global
+//struct key *KeyPointer1;	// Key pointer; change to return from function vs. global
 
 int CharSiteSizeGlob = 128;	// ASCII character set size assumed; this needs to be global for now
 
@@ -72,7 +72,7 @@ int main()
 	printf("Welcome to iDecipher!\n");
 	Display_Menu();
 
-	while (1) 
+	while (1)
 	{
 		if ( (Error_Trap(atoi(fgets(Option,60,stdin)), 1, 8) ) == 1)
 		{
@@ -80,7 +80,7 @@ int main()
 			Display_Menu();
 		}
 		else
-		{				
+		{
 			printf("Try entering a number 1 - 8\n");
 			Display_Menu();
 		}
@@ -97,16 +97,16 @@ void Main_Switch(choice)
 		case '1':
 			Enter_Cipher_Text();
 			return;
-		//case '3':
-		//	Basic_Analysis();
-		//	return;
+		case '3':
+			Basic_Analysis();
+			return;
 		//case '4':
 		//	Manual_Key_Entry();
 		//	return;
 		case '8':
 			printf("Later, Dude!\n");
-			exit(0);		
-		default :
+			exit(0);
+		default:
 			printf("\nDEBUG - switch default\n");
 			return;
 	}
@@ -125,9 +125,9 @@ void * Enter_Cipher_Text()
 	struct ciphertext Cipher1;	// Local variable to build out
 
 	struct ciphertext *Cipher1Ptr;	// Pointer for ciphertext to return
-	
+
 	Cipher1.ciphersize = 0;
-	Cipher1.ciphertextptr = NULL;	
+	Cipher1.ciphertextptr = NULL;
 
 	free (Cipher1.ciphertextptr);
 
@@ -136,7 +136,7 @@ void * Enter_Cipher_Text()
 	while (c != '\n')
 	{
 		c = getc(stdin);
-		CipherBuffer[n] = c;	
+		CipherBuffer[n] = c;
 		n++;					// TO DO:  Should this be ++n?
 	}
 
@@ -175,7 +175,7 @@ void * Enter_Cipher_Text()
 
 }
 
-void Basic_Analysis()
+void * Basic_Analysis(Cipher1)
 
 // 3 - Develops key from user defined characteristics and does
 // simple frquency analysis
@@ -185,20 +185,23 @@ void Basic_Analysis()
 // TO DO - add ability to choose number of characters per cipher character, e.g. AXDE, is it A, X, D, E or AX, DE?
 
 {
-//	int n = 0;
-//	int m = 0;
+	int n = 0;
+	int m = 0;
+
+	struct key Key1;
+	struct * key KeyPtr1;
 
 	// Intialize the Key structure
 
-//	for (n = 0; n < CharSiteSizeGlob; n ++)
-//	{
-//		Key1.cipherchar[n] = 0;
-//		Key1.frequency[n] = 0;
-//		Key1.plainchar[n] = 0;
-//	}
+	Key1.keysize = 0;
+	for (n = 0; n < CharSiteSizeGlob; n ++)
+	{
+		Key1.cipherchar[n] = 0;
+		Key1.frequency[n] = 0;
+		Key1.plainchar[n] = 0;
+	}
 
-
-//	printf ("Let's analyze!\n");
+	printf ("Let's analyze!\n");
 
 //	for (n = 0; n < ciphersize; n++)	// Don't count the null at the end of ciphertext!
 //	{
