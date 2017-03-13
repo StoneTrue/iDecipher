@@ -111,7 +111,7 @@ int main()
 }
 
 
-void Enter_Cipher_Text(struct *Cipher)
+void Enter_Cipher_Text(struct ciphertext *Cipher)
 
 //  1 - enter cipher from stdin, return a pointer & save as user defined file
 
@@ -120,10 +120,10 @@ void Enter_Cipher_Text(struct *Cipher)
 	char c = 0;
 	int n = 0;
 
-	Cipher.ciphersize = 0;
-	Cipher.ciphertextptr = NULL;
+	(*Cipher).ciphersize = 0;
+	(*Cipher).ciphertextptr = NULL;
 
-	free (Cipher.ciphertextptr);
+	free ((*Cipher).ciphertextptr);
 
 	printf ("Enter your cipher text here: ");
 
@@ -136,11 +136,11 @@ void Enter_Cipher_Text(struct *Cipher)
 
 	CipherBuffer[n] = '\0';				// A null on the end.
 
-	Cipher.ciphersize = n - 1;			// The null at the end is not part of the cipher
+	(*Cipher).ciphersize = n - 1;			// The null at the end is not part of the cipher
 
-	Cipher.ciphertextptr = (char *) malloc(Cipher.ciphersize);
+	(*Cipher).ciphertextptr = (char *) malloc((*Cipher).ciphersize);
 
-	if (Cipher.ciphertextptr == NULL)
+	if ((*Cipher).ciphertextptr == NULL)
 	{
 		printf ("Whoa!  Something happened.  Let's try again.\n");
 		return;
@@ -150,10 +150,10 @@ void Enter_Cipher_Text(struct *Cipher)
 
 	printf ("\nYou entered: ");
 
-	while (n <= Cipher.ciphersize)
+	while (n <= (*Cipher).ciphersize)
 	{
-		Cipher.ciphertextptr[n] = CipherBuffer[n];
-		putc(Cipher.ciphertextptr[n],stdout);
+		(*Cipher).ciphertextptr[n] = CipherBuffer[n];
+		putc((*Cipher).ciphertextptr[n],stdout);
 		n++;
 	}
 
@@ -166,7 +166,7 @@ void Enter_Cipher_Text(struct *Cipher)
 	return;
 }
 
-void Basic_Analysis(struct *Cipher, struct *Key)
+void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 
 // 3 - Develops key from user defined characteristics and does
 // simple frquency analysis
@@ -181,31 +181,31 @@ void Basic_Analysis(struct *Cipher, struct *Key)
 
 	// Intialize the Key structure
 
-	Key.keysize = 0;
+	(*Key).keysize = 0;
 	for (n = 0; n < CharSiteSizeGlob; n ++)
 	{
-		Key.cipherchar[n] = 0;
-		Key.frequency[n] = 0;
-		Key.plainchar[n] = 0;
+		(*Key).cipherchar[n] = 0;
+		(*Key).frequency[n] = 0;
+		(*Key).plainchar[n] = 0;
 	}
 
 	printf ("Let's analyze!\n");
 
-	for (n = 0; n < Cipher.ciphersize; n++)		// Don't count the null at the end of ciphertext!
+	for (n = 0; n < (*Cipher).ciphersize; n++)		// Don't count the null at the end of ciphertext!
 	{
-		for (m = 0; m <= Key.keysize; m++)
+		for (m = 0; m <= (*Key).keysize; m++)
 		{
-			if (Cipher.ciphertext[n] == Key.cipherchar[m])
+			if ((*Cipher).ciphertext[n] == (*Key).cipherchar[m])
 			{
-				Key.frequency[m]++;
+				(*Key).frequency[m]++;
 				break;
 			}
 			else
 			{
-				if (m == Key.keysize)
+				if (m == (*Key).keysize)
 				{
-					Key.cipherchar[m] = Cipher.ciphertext[n];
-					Key.keysize++;
+					(*Key).cipherchar[m] = (*Cipher).ciphertext[n];
+					(*Key).keysize++;
 					break;
 				}
 			}
@@ -214,7 +214,7 @@ void Basic_Analysis(struct *Cipher, struct *Key)
 
 	printf ("\nDEBUG - keysize is %d \n", &Key-> keysize);
 
-	for (n = 0; n < Key.keysize; n++
+	for (n = 0; n < (*Key).keysize; n++
 	{
 		printf ("\nDEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), &Key->cipherchar[n],( &Key->frequency[n]+1 ));
 	}
