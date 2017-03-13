@@ -50,7 +50,7 @@ struct key {			// Key structure:  cipher character, frequency, plain character, 
 void Display_Menu();
 void Enter_Cipher_Text(struct ciphertext *Cipher);
 void Basic_Analysis(struct ciphertext *Cipher, struct key *Key);
-void Manual_Key_Entry();
+void Manual_Key_Entry(struct key *Key);
 void Display_Plaintext();
 int Error_Trap(int, int, int);
 
@@ -60,17 +60,18 @@ int main()
 
 {
 	char Option[60] = { 0 };	// Initialize
-	struct ciphertext Cipher1;
-	struct key Key1;
 
 	//  Define Cipher1, Key1 here; used throughout; TO DO:  options to save if new one entered
+
+	struct ciphertext Cipher1;
+	struct key Key1;
 
 	printf("\nWelcome to iDecipher!\n");
 	Display_Menu();
 
 	while (1)
 	{
-		if ( (Error_Trap(atoi(fgets(Option,60,stdin)), 1, 8) ) == 1)
+		if ( Error_Trap(atoi(fgets(Option,60,stdin)), 1, 8) == 1)
 		{
 			switch (Option[0])
 			{
@@ -80,9 +81,9 @@ int main()
 				case '3':
 					Basic_Analysis(&Cipher1, &Key1);
 					break;
-				//case 4:
-				//	Manual_Key_Entry();
-				//	break;
+				case '4':
+					Manual_Key_Entry(&Key1);
+					break;
 				case '8':
 					printf("Later, Dude!\n");
 					exit(0);
@@ -214,35 +215,44 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 }
 
 
-void Manual_Key_Entry()
+void Manual_Key_Entry(struct key *Key)
 
 // User manually enters a plain for each cipher character and displays plaintext
-// How to do this via the command line?  Display whole list and then ask one at a time?
+// Displays whole list and then asks one at a time
 // Display_Plaintext will be a separate function
+
 {
+	int n = 0;
+	char Pick[60] = { 0 };		// Initialize
+
+	printf ("OK, this is the hard way.\n");
+	printf ("Let's start by printing all we know:\n");
+
+	for (n = 0; n < (*Key).keysize; n++)
+	{
+		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n]+1 ));
+	}
+	
+	printf ("\nNow let's go over this line by line...\n");
+	
+	for (n = 0; n < (*Key).keysize; n++)
+	{
+		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n]+1 ));
+		printf ("What do you think the plain character is?  ");
+		
+		if ( Error_Trap(((int)(fgets(Pick,60,stdin))), 32, 126) == 1)
+		{
+			(*Key).plainchar[n] = Pick[0];
+			printf ("DEBUG - you entered %c\n", (*Key).plainchar[n]);
+		}
+		else
+		{
+			printf ("Only one printable ASCII character please.\n");
+			n--;					// Do over!
+		}
+	}
+
 }
-//{
-
-//	int n = 0;
-
-//	printf ("OK, this is the hard way.\n");
-//	printf ("Let's start by printing all we know:\n");
-//	for (n = 0; n < keysize; n++)
-//	{
-//	printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
-//	}
-	
-//	printf ("\nNow let's go over this line by line...\n");
-	
-//	for (n = 0; n < keysize; n++)
-//	{
-//	printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPointer1->cipherchar[n],( KeyPointer1->frequency[n]+1 ));
-//		printf ("What do you think the plain character is?  ");
-//		Key1.plainchar[n] = getc(stdin);			//Need to error trap this; only one ASCII char!
-//		printf ("DEBUG - you entered %c\n", KeyPointer1->plainchar[n]);
-//	}
-
-//}
 
 void Display_Plaintext()
 
