@@ -29,18 +29,7 @@
 //  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 //
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr,
-//
-//  TO DO:
-//
-//  Eliminate all global variables (or as many as possible)
-//  Use structures for ciphertext, ciphersize, and key
 
-// 3/12/2017:  What a mess!  Attempting to remove global variables has really messed things up.  What I want to do is:
-// Define Cipher1 and Key1 in main.
-// Pass the pointers to these structure variables to various functions.
-// Functions do there things to them.
-// Is this possible without Cipher1 and Key1 being global?   Seems so - no return really required then.  Also, local declaration does not appear needed.
-// Just need to pass the pointer, dereference in the function.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,18 +54,16 @@ void Manual_Key_Entry();
 void Display_Plaintext();
 int Error_Trap(int, int, int);
 
-//struct key *KeyPointer1;	// Key pointer; change to return from function vs. global
-
-int CharSiteSizeGlob = 128;	// ASCII character set size assumed; this needs to be global for now
+int CharSiteSizeGlob = 128;	// ASCII character set size assumed
 
 int main()
 
 {
-	char Option[60];
+	char Option[60] = { 0 };	// Initialize
 	struct ciphertext Cipher1;
 	struct key Key1;
 
-	//  Define Cipher1, Key1 here; used throughout; options to save if new one entered
+	//  Define Cipher1, Key1 here; used throughout; TO DO:  options to save if new one entered
 
 	printf("Welcome to iDecipher!\n");
 	Display_Menu();
@@ -89,15 +76,19 @@ int main()
 			{
 				case '1':
 					Enter_Cipher_Text(&Cipher1);
+					break;
 				case '3':
 					Basic_Analysis(&Cipher1, &Key1);
-				//case '4':
+					break;
+				//case 4:
 				//	Manual_Key_Entry();
+				//	break;
 				case '8':
 					printf("Later, Dude!\n");
 					exit(0);
 				default:
 					printf("\nDEBUG - switch default\n");
+					break;
 			}
 
 			Display_Menu();
@@ -113,7 +104,7 @@ int main()
 
 void Enter_Cipher_Text(struct ciphertext *Cipher)
 
-//  1 - enter cipher from stdin, return a pointer & save as user defined file
+//  1 - enter cipher from stdin, return a pointer & TO DO:  save as user defined file
 
 {
 	char CipherBuffer[1000] = { 0 };
@@ -195,7 +186,7 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 	{
 		for (m = 0; m <= (*Key).keysize; m++)
 		{
-			if ((*Cipher).ciphertext[n] == (*Key).cipherchar[m])
+			if ((*Cipher).ciphertextptr[n] == (*Key).cipherchar[m])
 			{
 				(*Key).frequency[m]++;
 				break;
@@ -204,7 +195,7 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 			{
 				if (m == (*Key).keysize)
 				{
-					(*Key).cipherchar[m] = (*Cipher).ciphertext[n];
+					(*Key).cipherchar[m] = (*Cipher).ciphertextptr[n];
 					(*Key).keysize++;
 					break;
 				}
@@ -212,11 +203,11 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 		}
 	}
 
-	printf ("\nDEBUG - keysize is %d \n", &Key-> keysize);
+	printf ("\nDEBUG - Keysize is %d \n", (*Key).keysize);
 
-	for (n = 0; n < (*Key).keysize; n++
+	for (n = 0; n < (*Key).keysize; n++)
 	{
-		printf ("\nDEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), &Key->cipherchar[n],( &Key->frequency[n]+1 ));
+		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n], (*Key).frequency[n]+1 );
 	}
 
 	return;
@@ -225,7 +216,7 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 
 void Manual_Key_Entry()
 
-// User manually enters a plaint for each cipher character and displays plaintext
+// User manually enters a plain for each cipher character and displays plaintext
 // How to do this via the command line?  Display whole list and then ask one at a time?
 // Display_Plaintext will be a separate function
 {
@@ -280,14 +271,14 @@ void Display_Menu()
 	return;
 }
 
-int Error_Trap(Test, Lower_Bound, Upper_Bound)
+int Error_Trap(Test, LowerBound, UpperBound)
 
 //  Tests user input against upper and lower bounds; returns 1 if good & 0 if bad
 
 {
-	int Error = 0;		// Declare & initialize local variable	
+	int Error = 0;			// Declare & initialize local variable	
 
-	if (Test >= Lower_Bound && Test <= Upper_Bound)
+	if (Test >= LowerBound && Test <= UpperBound)
 	{
 		Error = 1;
 	}
