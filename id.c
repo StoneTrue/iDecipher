@@ -65,7 +65,7 @@ int main()
 
 	//  Define Cipher1, Key1 here; used throughout; TO DO:  options to save if new one entered
 
-	printf("Welcome to iDecipher!\n");
+	printf("\nWelcome to iDecipher!\n");
 	Display_Menu();
 
 	while (1)
