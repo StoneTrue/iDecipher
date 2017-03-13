@@ -35,30 +35,35 @@
 //  Eliminate all global variables (or as many as possible)
 //  Use structures for ciphertext, ciphersize, and key
 
+// 3/12/2017:  What a mess!  Attempting to remove global variables has really messed things up.  What I want to do is:
+// Define Cipher1 and Key1 in main.
+// Pass the pointers to these structure variables to various functions.
+// Functions do there things to them.
+// Is this possible without Cipher1 and Key1 being global?   Seems so - no return really required then.  Also, local declaration does not appear needed.
+// Just need to pass the pointer, dereference in the function.
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void Display_Menu();
-void Main_Switch (int);
-void * Enter_Cipher_Text();
-void * Basic_Analysis(* ciphertext);
-void Manual_Key_Entry();
-void Display_Plaintext();
-int Error_Trap(int, int, int);
+struct ciphertext {		// Cipher text structure:  cipher pointer to ciphertext on heap & size.
+	char * ciphertextptr;
+	int ciphersize;
+};
 
 struct key {			// Key structure:  cipher character, frequency, plain character, keysize; global declaration
 	char cipherchar[128];
 	int frequency[128];
 	char plainchar[128];
 	int keysize;
-};				// Key1 will need to be a return
-
-struct ciphertext {		// Cipher text structure:  cipher pointer & size.
-	char *ciphertextptr;
-	int ciphersize;
 };
+
+void Display_Menu();
+void Enter_Cipher_Text(struct ciphertext *Cipher);
+void Basic_Analysis(struct ciphertext *Cipher, struct key *Key);
+void Manual_Key_Entry();
+void Display_Plaintext();
+int Error_Trap(int, int, int);
 
 //struct key *KeyPointer1;	// Key pointer; change to return from function vs. global
 
@@ -68,6 +73,10 @@ int main()
 
 {
 	char Option[60];
+	struct ciphertext Cipher1;
+	struct key Key1;
+
+	//  Define Cipher1, Key1 here; used throughout; options to save if new one entered
 
 	printf("Welcome to iDecipher!\n");
 	Display_Menu();
@@ -76,7 +85,21 @@ int main()
 	{
 		if ( (Error_Trap(atoi(fgets(Option,60,stdin)), 1, 8) ) == 1)
 		{
-			Main_Switch(Option[0]);
+			switch (Option[0])
+			{
+				case '1':
+					Enter_Cipher_Text(&Cipher1);
+				case '3':
+					Basic_Analysis(&Cipher1, &Key1);
+				//case '4':
+				//	Manual_Key_Entry();
+				case '8':
+					printf("Later, Dude!\n");
+					exit(0);
+				default:
+					printf("\nDEBUG - switch default\n");
+			}
+
 			Display_Menu();
 		}
 		else
@@ -87,32 +110,8 @@ int main()
 	}
 }
 
-void Main_Switch(choice)
 
-{
-	// Top level program control
-
-	switch (choice)
-	{
-		case '1':
-			Enter_Cipher_Text();
-			return;
-		case '3':
-			Basic_Analysis();
-			return;
-		//case '4':
-		//	Manual_Key_Entry();
-		//	return;
-		case '8':
-			printf("Later, Dude!\n");
-			exit(0);
-		default:
-			printf("\nDEBUG - switch default\n");
-			return;
-	}
-}
-
-void * Enter_Cipher_Text()
+void Enter_Cipher_Text(struct *Cipher)
 
 //  1 - enter cipher from stdin, return a pointer & save as user defined file
 
@@ -121,14 +120,10 @@ void * Enter_Cipher_Text()
 	char c = 0;
 	int n = 0;
 
-	struct ciphertext Cipher1;	// Local variable to build out
+	Cipher.ciphersize = 0;
+	Cipher.ciphertextptr = NULL;
 
-	struct ciphertext *Cipher1Ptr;	// Pointer for ciphertext to return
-
-	Cipher1.ciphersize = 0;
-	Cipher1.ciphertextptr = NULL;
-
-	free (Cipher1.ciphertextptr);
+	free (Cipher.ciphertextptr);
 
 	printf ("Enter your cipher text here: ");
 
@@ -141,11 +136,11 @@ void * Enter_Cipher_Text()
 
 	CipherBuffer[n] = '\0';				// A null on the end.
 
-	Cipher1.ciphersize = n - 1;			// The null at the end is not part of the cipher
+	Cipher.ciphersize = n - 1;			// The null at the end is not part of the cipher
 
-	Cipher1.ciphertextptr = (char *) malloc(Cipher1.ciphersize);
+	Cipher.ciphertextptr = (char *) malloc(Cipher.ciphersize);
 
-	if (Cipher1.ciphertextptr == NULL)
+	if (Cipher.ciphertextptr == NULL)
 	{
 		printf ("Whoa!  Something happened.  Let's try again.\n");
 		return;
@@ -155,10 +150,10 @@ void * Enter_Cipher_Text()
 
 	printf ("\nYou entered: ");
 
-	while (n <= Cipher1.ciphersize)
+	while (n <= Cipher.ciphersize)
 	{
-		Cipher1.ciphertextptr[n] = CipherBuffer[n];
-		putc(Cipher1.ciphertextptr[n],stdout);
+		Cipher.ciphertextptr[n] = CipherBuffer[n];
+		putc(Cipher.ciphertextptr[n],stdout);
 		n++;
 	}
 
@@ -166,14 +161,12 @@ void * Enter_Cipher_Text()
 
 	// TO DO:  Need to save the text entered; user defined name
 
-	Cipher1Ptr = &Cipher1;
+	printf ("DEBUG - Cipher Pointer is at: 0x%x\n", &Cipher);
 
-	printf ("DEBUG - Cipher Pointer is at: 0x%x\n", Cipher1Ptr);
-
-	return Cipher1Ptr;
+	return;
 }
 
-void * Basic_Analysis(Cipher1)
+void Basic_Analysis(struct *Cipher, struct *Key)
 
 // 3 - Develops key from user defined characteristics and does
 // simple frquency analysis
@@ -186,52 +179,47 @@ void * Basic_Analysis(Cipher1)
 	int n = 0;
 	int m = 0;
 
-	struct key Key1;
-	struct key *KeyPtr1;
-
 	// Intialize the Key structure
 
-	Key1.keysize = 0;
+	Key.keysize = 0;
 	for (n = 0; n < CharSiteSizeGlob; n ++)
 	{
-		Key1.cipherchar[n] = 0;
-		Key1.frequency[n] = 0;
-		Key1.plainchar[n] = 0;
+		Key.cipherchar[n] = 0;
+		Key.frequency[n] = 0;
+		Key.plainchar[n] = 0;
 	}
 
 	printf ("Let's analyze!\n");
 
-	for (n = 0; n < Cipher1.ciphersize; n++)	// Don't count the null at the end of ciphertext!
+	for (n = 0; n < Cipher.ciphersize; n++)		// Don't count the null at the end of ciphertext!
 	{
-		for (m = 0; m <= Key1.keysize; m++)
+		for (m = 0; m <= Key.keysize; m++)
 		{
-			if (Cipher1.ciphertext[n] == Key1.cipherchar[m])
+			if (Cipher.ciphertext[n] == Key.cipherchar[m])
 			{
-				Key1.frequency[m]++;
+				Key.frequency[m]++;
 				break;
 			}
 			else
 			{
-				if (m == Key1.keysize)
+				if (m == Key.keysize)
 				{
-					Key1.cipherchar[m] = Cipher1.ciphertext[n];
-					Key1.keysize++;
+					Key.cipherchar[m] = Cipher.ciphertext[n];
+					Key.keysize++;
 					break;
 				}
 			}
 		}
 	}
 
-	KeyPtr1 = &Key1;			// Save the Key as a pointer for future reference.
+	printf ("\nDEBUG - keysize is %d \n", &Key-> keysize);
 
-	printf ("\nDEBUG - keysize is %d \n", KeyPtr1 -> keysize);
-
-	for (n = 0; n < Key1.keysize; n++
+	for (n = 0; n < Key.keysize; n++
 	{
-		printf ("\nDEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), KeyPtr1->cipherchar[n],( KeyPtr1->frequency[n]+1 ));
+		printf ("\nDEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), &Key->cipherchar[n],( &Key->frequency[n]+1 ));
 	}
 
-	return KeyPtr1;
+	return;
 }
 
 
