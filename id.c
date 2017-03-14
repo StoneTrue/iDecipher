@@ -29,9 +29,10 @@
 //  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 //
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
-//  TO DO:  traps at start of each function in case data already entered before over-write
+//  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
+//
+//  TO DO:  really need the open & save file options; fwrite & fread?
 //  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
-//  TO DO:  really need the open & save file options
 //  TO DO:  crib-checker & plain-checker algorithms
 
 
@@ -64,19 +65,31 @@ int CharSiteSizeGlob = 128;	// ASCII character set size assumed
 int main()
 
 {
-	char Option[60] = { 0 };	// Initialize
+	char Option[10] = { 0 };
+	int n = 0;
 
-	//  Define Cipher1, Key1 here; used throughout; TO DO:  options to save if new one entered
+	//  Define & initialize Cipher1, Key1 here; used throughout
 
 	struct ciphertext Cipher1;
+	(Cipher1).ciphersize = 0;
+	(Cipher1).ciphertextptr = NULL;
+	(Cipher1).plaintextptr = NULL;
+
 	struct key Key1;
+	(Key1).keysize = 0;
+	for (n = 0; n < CharSiteSizeGlob; n ++)
+	{
+		(Key1).cipherchar[n] = 0;
+		(Key1).frequency[n] = 0;
+		(Key1).plainchar[n] = 0;
+	}
 
 	printf("\nWelcome to iDecipher!\n");
 	Display_Menu();
 
 	while (1)
 	{
-		if ( Error_Trap(atoi(fgets(Option,60,stdin)), 1, 8) == 1)
+		if ( Error_Trap(atoi(fgets(Option,10,stdin)), 1, 8) == 1)
 		{
 			switch (Option[0])
 			{
@@ -116,15 +129,34 @@ void Enter_Cipher_Text(struct ciphertext *Cipher)
 //  1 - enter cipher from stdin, return a pointer & TO DO:  save as user defined file, allow entry from file (input?)
 
 {
-	//  TO DO:  Check if something already in Cipher; confirm proceeding if there is
-
-	char CipherBuffer[1000] = { 0 };
-	char c = 0;
-	int n = 0;
+	if ( (*Cipher).ciphertextptr != NULL )
+	{
+		char Pick[10] = { 0 };
+		printf("\nThere is already a ciphertext in memory.\nProceed with a new entry (Y / N)?  ");
+		fgets (Pick, 10, stdin);
+		switch (Pick[0])
+		{
+			case 'Y':
+				break;
+			case 'y':
+				break;
+			case 'N':
+				return;
+			case 'n':
+				return;
+			default:
+				printf("Not sure what you said...\n");
+				return;
+		}
+	}
 
 	(*Cipher).ciphersize = 0;
 	(*Cipher).ciphertextptr = NULL;
 	(*Cipher).plaintextptr = NULL;
+
+	char CipherBuffer[1000] = { 0 };
+	char c = 0;
+	int n = 0;
 
 	free ((*Cipher).ciphertextptr);
 
@@ -163,8 +195,6 @@ void Enter_Cipher_Text(struct ciphertext *Cipher)
 
 	printf ("\n");
 
-	// TO DO:  Need to save the text entered; user defined name
-
 	printf ("DEBUG - Cipher Pointer is at: 0x%x\n", &Cipher);
 
 	return;
@@ -172,20 +202,35 @@ void Enter_Cipher_Text(struct ciphertext *Cipher)
 
 void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 
-// 3 - Develops key from user defined characteristics and does
-// simple frquency analysis
-// Loops through text ciphertext points at, notes all unique
-// values and counts occurences
+// 3 - Develops key from user defined characteristics and does simple frquency analysis
+// Loops through text ciphertext points at, notes all unique values and counts occurences
 // Results in defining global key pointer
 // TO DO - add ability to choose number of characters per cipher character, e.g. AXDE, is it A, X, D, E or AX, DE?
 
 {
-	// TO DO:  Check if something already in Key; confirm proceeding if there is
+	if ( (*Key).keysize != 0 )
+	{
+		char Pick[10] = { 0 };
+		printf("\nThere is already a key in memory.\nProceed with a new analysis (Y / N)?  ");
+		fgets (Pick, 10, stdin);
+		switch (Pick[0])
+		{
+			case 'Y':
+				break;
+			case 'y':
+				break;
+			case 'N':
+				return;
+			case 'n':
+				return;
+			default:
+				printf("Not sure what you said...\n");
+				return;
+		}
+	}
 
 	int n = 0;
 	int m = 0;
-
-	// Intialize the Key structure
 
 	(*Key).keysize = 0;
 	for (n = 0; n < CharSiteSizeGlob; n ++)
@@ -233,15 +278,40 @@ void Manual_Key_Entry(struct key *Key)
 
 // User manually enters a plain for each cipher character and displays plaintext
 // Displays whole list and then asks one at a time
-// Display_Plaintext will be a separate function
 
 {
-	// TO DO: Check if something already in Key.plainchar; confirm proceeding if there is
-	// Reorder so most frequent is asked first?
 	// Option to break out and have all remaining entered as cipher characters.
 
+	char Pick[10] = { 0 };
+
+	if ( (*Key).plainchar[0] != 0 )				// Note - it COULD be zero; this is not the best test...
+	{
+		printf("\nThere arer already some plain characters in memory.\nProceed with a new analysis (Y / N)?  ");
+		fgets (Pick, 10, stdin);
+		switch (Pick[0])
+		{
+			case 'Y':
+				break;
+			case 'y':
+				break;
+			case 'N':
+				return;
+			case 'n':
+				return;
+			default:
+				printf("Not sure what you said...\n");
+				return;
+		}
+	}
+
 	int n = 0;
-	char Pick[60] = { 0 };		// Initialize
+
+	for (n = 0; n < CharSiteSizeGlob; n ++)
+	{
+		(*Key).plainchar[n] = 0;
+	}
+
+	Pick[10] = 0;
 
 	printf ("OK, this is the hard way.\n");
 	printf ("Let's start by printing all we know:\n");
@@ -258,7 +328,7 @@ void Manual_Key_Entry(struct key *Key)
 		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n]+1 ));
 		printf ("What do you think the plain character is?  ");
 
-		fgets(Pick, 60, stdin);
+		fgets(Pick, 10, stdin);
 		
 		if ( ( Error_Trap(Pick[0], 32, 126) == 1 )  || ( (char)Pick[0] == 10 ) )
 		{
@@ -344,7 +414,7 @@ int Error_Trap(Test, LowerBound, UpperBound)
 //  Tests user input against upper and lower bounds; returns 1 if good & 0 if bad
 
 {
-	int Error = 0;			// Declare & initialize local variable	
+	int Error = 0;
 
 	if (Test >= LowerBound && Test <= UpperBound)
 	{
