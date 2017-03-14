@@ -239,8 +239,10 @@ void Manual_Key_Entry(struct key *Key)
 	{
 		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n]+1 ));
 		printf ("What do you think the plain character is?  ");
+
+		fgets(Pick, 60, stdin);
 		
-		if ( Error_Trap(((int)(fgets(Pick,60,stdin))), 32, 126) == 1)
+		if ( Error_Trap(Pick[0], 32, 126) == 1 )
 		{
 			(*Key).plainchar[n] = Pick[0];
 			printf ("DEBUG - you entered %c\n", (*Key).plainchar[n]);
