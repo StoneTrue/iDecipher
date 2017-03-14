@@ -21,14 +21,18 @@
 //
 //  3.1 develop key from file
 //  3.1.1 - choose file for analysis
-//  3.1.2 - define key character lengh (e.g. 1, 2; engima would be 1 character (E=x), others could be 2 (ER=x)
+//  3.1.2 - define key character lengh (e.g. 1, 2; enigma would be 1 character (E=x), others could be 2 (ER=x)
 //  3.1.3 - list all occurences of key character
 //  3.1.9 - save file for further analysis
 //  3.1.10 - exit back to 3 menu
 //
 //  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 //
-//  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr,
+//  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
+//  TO DO:  traps at start of each function in case data already entered before over-write
+//  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
+//  TO DO:  really need the open & save file options
+//  TO DO:  crib-checker & plain-checker algorithms
 
 
 #include <stdio.h>
@@ -38,6 +42,7 @@
 struct ciphertext {		// Cipher text structure:  cipher pointer to ciphertext on heap & size.
 	char * ciphertextptr;
 	int ciphersize;
+	char * plaintextptr;
 };
 
 struct key {			// Key structure:  cipher character, frequency, plain character, keysize; global declaration
@@ -84,6 +89,9 @@ int main()
 				case '4':
 					Manual_Key_Entry(&Key1);
 					break;
+				case '6':
+					Display_Plaintext(&Cipher1, &Key1);
+					break;
 				case '8':
 					printf("Later, Dude!\n");
 					exit(0);
@@ -105,15 +113,18 @@ int main()
 
 void Enter_Cipher_Text(struct ciphertext *Cipher)
 
-//  1 - enter cipher from stdin, return a pointer & TO DO:  save as user defined file
+//  1 - enter cipher from stdin, return a pointer & TO DO:  save as user defined file, allow entry from file (input?)
 
 {
+	//  TO DO:  Check if something already in Cipher; confirm proceeding if there is
+
 	char CipherBuffer[1000] = { 0 };
 	char c = 0;
 	int n = 0;
 
 	(*Cipher).ciphersize = 0;
 	(*Cipher).ciphertextptr = NULL;
+	(*Cipher).plaintextptr = NULL;
 
 	free ((*Cipher).ciphertextptr);
 
@@ -131,8 +142,9 @@ void Enter_Cipher_Text(struct ciphertext *Cipher)
 	(*Cipher).ciphersize = n - 1;			// The null at the end is not part of the cipher
 
 	(*Cipher).ciphertextptr = (char *) malloc((*Cipher).ciphersize);
+	(*Cipher).plaintextptr = (char *) malloc((*Cipher).ciphersize);
 
-	if ((*Cipher).ciphertextptr == NULL)
+	if ( ( (*Cipher).ciphertextptr == NULL) || ( (*Cipher).plaintextptr == NULL) )
 	{
 		printf ("Whoa!  Something happened.  Let's try again.\n");
 		return;
@@ -168,6 +180,8 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 // TO DO - add ability to choose number of characters per cipher character, e.g. AXDE, is it A, X, D, E or AX, DE?
 
 {
+	// TO DO:  Check if something already in Key; confirm proceeding if there is
+
 	int n = 0;
 	int m = 0;
 
@@ -222,6 +236,10 @@ void Manual_Key_Entry(struct key *Key)
 // Display_Plaintext will be a separate function
 
 {
+	// TO DO: Check if something already in Key.plainchar; confirm proceeding if there is
+	// Reorder so most frequent is asked first?
+	// Option to break out and have all remaining entered as cipher characters.
+
 	int n = 0;
 	char Pick[60] = { 0 };		// Initialize
 
@@ -242,10 +260,18 @@ void Manual_Key_Entry(struct key *Key)
 
 		fgets(Pick, 60, stdin);
 		
-		if ( Error_Trap(Pick[0], 32, 126) == 1 )
+		if ( ( Error_Trap(Pick[0], 32, 126) == 1 )  || ( (char)Pick[0] == 10 ) )
 		{
-			(*Key).plainchar[n] = Pick[0];
-			printf ("DEBUG - you entered %c\n", (*Key).plainchar[n]);
+			if ( (char)Pick[0] == 10 )
+			{
+				printf ("DEBUG - nothing entered.  Cipher character will be used.\n");
+				(*Key).plainchar[n] = (*Key).cipherchar[n];
+			}
+			else			
+			{
+				(*Key).plainchar[n] = Pick[0];
+				printf ("DEBUG - you entered %c\n", (*Key).plainchar[n]);
+			}
 		}
 		else
 		{
@@ -254,16 +280,46 @@ void Manual_Key_Entry(struct key *Key)
 		}
 	}
 
+	return;
 }
 
-void Display_Plaintext()
+void Display_Plaintext(struct ciphertext *Cipher, struct key *Key)
 
 // Function to display plaintext for a given cipher text & key
 // Note from VBA work:  this is a heavily used function!
 // Also will need to output plaintext to various tools like frequency comparison & plain word check
 
 {
+	//  TO DO:  check if Cipher, Key.plainchar populated; otherwise break
 
+	int n = 0;
+	int m = 0;
+
+	for (n = 0; n < (*Cipher).ciphersize; n++)
+	{
+		for (m = 0; m < (*Key).keysize; m++)
+		{
+			if ((*Cipher).ciphertextptr[n] == (*Key).cipherchar[m])
+			{
+				(*Cipher).plaintextptr[n] = (*Key).plainchar[m];
+				break;
+			}
+		}
+	}
+
+	n = 0;
+
+	printf ("\nThe plaintext is: ");
+
+	while (n <= (*Cipher).ciphersize)
+	{
+		putc((*Cipher).plaintextptr[n],stdout);
+		n++;
+	}
+
+	printf ("\n");
+	
+	return;	
 }
 
 void Display_Menu()
