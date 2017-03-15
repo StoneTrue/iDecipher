@@ -59,6 +59,8 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key);
 void Manual_Key_Entry(struct key *Key);
 void Display_Plaintext();
 int Error_Trap(int, int, int);
+void Save_Cipher (struct ciphertext *Cipher);
+void Save_Key (struct key *Key);
 
 int CharSiteSizeGlob = 128;	// ASCII character set size assumed
 
@@ -427,4 +429,33 @@ int Error_Trap(Test, LowerBound, UpperBound)
 
 	return Error;
 }
+
+void Save_Cipher (struct ciphertext *Cipher);
+
+//  Saves the current cipher text & details as user defined file
+
+{
+
+	// Prompt user for a file name
+	// Open file
+	// Use fwrite to save file
+	// Close file
+
+	(char) FileName[32] = { 0 };
+
+	printf("Please enter a file name (.txt will be appended automatically): ");
+	fgets(FileName, 32, stdin);
+	//  Append .txt to FileName
+	fopen(FileName, "w");
+	fwrite (&Cipher, sizeof(struct *Cipher), 1, FileName);
+}
+
+void Save_Key (struct key *Key);
+
+//  Saves the current key & analysis details as user defined file
+
+{
+
+}
+
 
