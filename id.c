@@ -442,10 +442,14 @@ void Save_Cipher (struct ciphertext *Cipher);
 	// Close file
 
 	(char) FileName[32] = { 0 };
+	int n = 0;
 
 	printf("Please enter a file name (.txt will be appended automatically): ");
 	fgets(FileName, 32, stdin);
-	//  Append .txt to FileName
+	while (FileName[n] != '\n')
+	{
+		n++;
+	}
 	fopen(FileName, "w");
 	fwrite (&Cipher, sizeof(struct *Cipher), 1, FileName);
 }
