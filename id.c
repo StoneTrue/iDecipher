@@ -31,6 +31,7 @@
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
+//  TO DO:  redo with strlen?
 //  TO DO:  really need the open & save file options; fwrite & fread?
 //  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
 //  TO DO:  crib-checker & plain-checker algorithms
@@ -322,16 +323,16 @@ void Manual_Key_Entry(struct key *Key)
 	{
 		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n]+1 ));
 	}
-	
+
 	printf ("\nNow let's go over this line by line...\n");
-	
+
 	for (n = 0; n < (*Key).keysize; n++)
 	{
 		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n]+1 ));
 		printf ("What do you think the plain character is?  ");
 
 		fgets(Pick, 10, stdin);
-		
+
 		if ( ( Error_Trap(Pick[0], 32, 126) == 1 )  || ( (char)Pick[0] == 10 ) )
 		{
 			if ( (char)Pick[0] == 10 )
@@ -339,7 +340,7 @@ void Manual_Key_Entry(struct key *Key)
 				printf ("DEBUG - nothing entered.  Cipher character will be used.\n");
 				(*Key).plainchar[n] = (*Key).cipherchar[n];
 			}
-			else			
+			else
 			{
 				(*Key).plainchar[n] = Pick[0];
 				printf ("DEBUG - you entered %c\n", (*Key).plainchar[n]);
@@ -390,8 +391,8 @@ void Display_Plaintext(struct ciphertext *Cipher, struct key *Key)
 	}
 
 	printf ("\n");
-	
-	return;	
+
+	return;
 }
 
 void Display_Menu()
@@ -423,7 +424,7 @@ int Error_Trap(Test, LowerBound, UpperBound)
 		Error = 1;
 	}
 	else
-	{	
+	{
 		Error = 0;
 	}
 
