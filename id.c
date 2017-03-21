@@ -31,6 +31,7 @@
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
+//  TO DO:  Figure out menu & work flow structure.  E.g. what is saved when, and what is opened for new analysis?
 //  TO DO:  open and existing cipher & key files for analysis
 //  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
 //  TO DO:  crib-checker & plain-checker algorithms
@@ -55,6 +56,7 @@ struct key {			// Key structure:  cipher character, frequency, plain character, 
 
 void Display_Menu();
 void Enter_Cipher_Text(struct ciphertext *Cipher);
+void Open_File();
 void Basic_Analysis(struct ciphertext *Cipher, struct key *Key);
 void Manual_Key_Entry(struct key *Key);
 void Display_Plaintext();
@@ -98,6 +100,9 @@ int main()
 				case '1':
 					Enter_Cipher_Text(&Cipher1);
 					break;
+				case '2':
+					Open_File(&Cipher1);
+					break;
 				case '3':
 					Basic_Analysis(&Cipher1, &Key1);
 					break;
@@ -128,7 +133,7 @@ int main()
 
 void Enter_Cipher_Text(struct ciphertext *Cipher)
 
-//  1 - enter cipher from stdin, return a pointer & TO DO:  save as user defined file, allow entry from file (input?)
+//  Enter cipher from stdin, return a pointer & TO DO:  allow entry from file
 
 {
 	if ( (*Cipher).ciphertextptr != NULL )
@@ -204,9 +209,43 @@ void Enter_Cipher_Text(struct ciphertext *Cipher)
 	return;
 }
 
+void Open_File(struct ciphertext *Cipher)
+
+//  Opens an existing cipher and key file for continued analysis
+
+{
+	char FileName[32] = { 0 };
+	int namelen, n = 0;
+	FILE *fp;
+
+	printf("Please enter the file name containing the cipher text:  ");
+	fgets (FileName, 32, stdin);
+	namelen = strlen (FileName);
+	FileName[namelen - 1] = 0;
+
+	fp = fopen (FileName, "r");
+	if (fp == NULL)
+	{
+		printf("Looks like that was not the correct file name...\n");
+		return;
+	}
+	fread (Cipher, sizeof(struct ciphertext), 1, fp);
+	
+	printf("DEBUG - Read cipher text from file %s is:  ", FileName);
+	while (n <= (*Cipher).ciphersize)
+	{
+		putc((*Cipher).ciphertextptr[n],stdout);
+		n++;
+	}
+
+	printf ("\nDEBUG - Cipher size is: %d\n", (*Cipher).ciphersize );
+
+	return;
+}
+
 void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 
-// 3 - Develops key from user defined characteristics and does simple frquency analysis
+// Develops key from user defined characteristics and does simple frquency analysis
 // Loops through text ciphertext points at, notes all unique values and counts occurences
 // Results in defining global key pointer
 // TO DO - add ability to choose number of characters per cipher character, e.g. AXDE, is it A, X, D, E or AX, DE?
@@ -297,8 +336,10 @@ void Manual_Key_Entry(struct key *Key)
 		switch (Pick[0])
 		{
 			case 'Y':
+				Save_Key(Key);			
 				break;
 			case 'y':
+				Save_Key(Key);
 				break;
 			case 'N':
 				return;
@@ -437,6 +478,7 @@ int Error_Trap(Test, LowerBound, UpperBound)
 void Save_Cipher (struct ciphertext *Cipher)
 
 //  Saves the current cipher text & details as user defined file
+//  Save cipher & key together?
 
 {
 	char FileName[32] = { 0 };
@@ -449,7 +491,7 @@ void Save_Cipher (struct ciphertext *Cipher)
 	strcat(FileName, "cipher.txt");
 	fp = fopen (FileName, "w");
 	printf("DEBUG - File Name is %s \n", FileName);
-	fwrite (&Cipher, sizeof(struct ciphertext), 1, fp);
+	fwrite (& (*Cipher), sizeof(struct ciphertext), 1, fp);
 	fclose (fp);
 	return;
 }
