@@ -31,8 +31,7 @@
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
-//  TO DO:  redo with strlen?
-//  TO DO:  really need the open & save file options; fwrite & fread?
+//  TO DO:  open and existing cipher & key files for analysis
 //  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
 //  TO DO:  crib-checker & plain-checker algorithms
 
@@ -140,8 +139,10 @@ void Enter_Cipher_Text(struct ciphertext *Cipher)
 		switch (Pick[0])
 		{
 			case 'Y':
+				Save_Cipher(Cipher);
 				break;
 			case 'y':
+				Save_Cipher(Cipher);
 				break;
 			case 'N':
 				return;
@@ -219,8 +220,10 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 		switch (Pick[0])
 		{
 			case 'Y':
+				Save_Key(Key);
 				break;
 			case 'y':
+				Save_Key(Key);
 				break;
 			case 'N':
 				return;
@@ -431,36 +434,44 @@ int Error_Trap(Test, LowerBound, UpperBound)
 	return Error;
 }
 
-void Save_Cipher (struct ciphertext *Cipher);
+void Save_Cipher (struct ciphertext *Cipher)
 
 //  Saves the current cipher text & details as user defined file
 
 {
-
-	// Prompt user for a file name
-	// Open file
-	// Use fwrite to save file
-	// Close file
-
-	(char) FileName[32] = { 0 };
-	int n = 0;
-
-	printf("Please enter a file name (.txt will be appended automatically): ");
-	fgets(FileName, 32, stdin);
-	while (FileName[n] != '\n')
-	{
-		n++;
-	}
-	fopen(FileName, "w");
-	fwrite (&Cipher, sizeof(struct *Cipher), 1, FileName);
+	char FileName[32] = { 0 };
+	int namelen = 0;
+	FILE *fp;
+	printf("Please enter a cipher file name (cipher.txt will be appended automatically): ");
+	fgets (FileName, 32, stdin);
+	namelen = strlen (FileName);
+	FileName[namelen - 1] = 0;
+	strcat(FileName, "cipher.txt");
+	fp = fopen (FileName, "w");
+	printf("DEBUG - File Name is %s \n", FileName);
+	fwrite (&Cipher, sizeof(struct ciphertext), 1, fp);
+	fclose (fp);
+	return;
 }
 
-void Save_Key (struct key *Key);
+void Save_Key (struct key *Key)
 
 //  Saves the current key & analysis details as user defined file
 
 {
-
+	char FileName[32] = { 0 };
+	int namelen = 0;
+	FILE *fp;
+	printf("Please enter a file name (key.txt will be appended automatically): ");
+	fgets (FileName, 32, stdin);
+	namelen = strlen (FileName);
+	FileName[namelen - 1] = 0;
+	strcat(FileName, "key.txt");
+	fp = fopen (FileName, "w");
+	printf("DEBUG - File Name is %s \n", FileName);
+	fwrite (&Key, sizeof(struct key), 1, fp);
+	fclose (fp);
+	return;
 }
 
 
