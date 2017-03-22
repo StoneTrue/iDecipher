@@ -1,40 +1,42 @@
 //  iDecipher!  a set of cryptographic tools by R. Austin
 //
-//  Homophonic test case:
-//  Polyphonic test case:
-//  Ceaser shift test case:
+//  Menu Flow:
+//  1 - Enter new cipher
+//  2 - Open existing analysis .dat file
+//  3 - Exit
 //
-//  1 - enter cipher from stdin & save as user defined file
-//  2 - read cipher text from user defined file ans save as user
-//  defined file
+//  1.1 - Load new cipher from file (.txt) & go to analysis
+//  1.2 - Enter new cipher manually (stdin) & go to analysis - COMPLETED
+//  1.3 - Back to top (if something entered, offer to save .dat)
+//  1.4 - Exit (if something entered, offer to save .dat)
+//
+//  2.1 - Open existing analysis .dat file & go to analysis
+//  2.2 - Back to top (if something entered, offer to save .dat)
+//  2.3 - Exit (if something entered, offer to save .dat)
+//
 //  3 - analyze file chosen; default is most recent
 //  analysis options are:
-//  3.1 - develop key from user defined features, eg number of
-//  characters per key element and perform frequency analysis
-//  3.3 -  enter a plain key manually
+//  3.1 - develop key from user defined features and perform frequency analysis -COMPLETED
+//  3.3 -  enter a plain key manually - COMPLETED
 //  3.4 -  calculate possible keys from frequency analysis
 //  3.5 -  calculate possible keys from user entered key
 //  3.6 -  do a Caeser shift
 //  3.7 -  wheels
 //  3.8 -  check for defined plain words e.g. rockyou.txt
-//  3.99 - exit analysis
-//
-//  3.1 develop key from file
-//  3.1.1 - choose file for analysis
-//  3.1.2 - define key character lengh (e.g. 1, 2; enigma would be 1 character (E=x), others could be 2 (ER=x)
-//  3.1.3 - list all occurences of key character
-//  3.1.9 - save file for further analysis
-//  3.1.10 - exit back to 3 menu
+//  3.98 - Back to top (if something entered, offer to save .dat)
+//  3.99 - Exit (if something entered, offer to save .dat)
 //
 //  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 //
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
+//
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
-//  TO DO:  Figure out menu & work flow structure.  E.g. what is saved when, and what is opened for new analysis?
-//  TO DO:  open and existing cipher & key files for analysis
-//  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
+//  TO DO:  save and open and existing cipher & key files for analysis
+//  TO DO:  enter cipher from .txt file
+//  TO DO:  Implement menu & work flow structure above
 //  TO DO:  crib-checker & plain-checker algorithms
+//  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
 
 
 #include <stdio.h>
@@ -42,16 +44,16 @@
 #include <string.h>
 
 struct ciphertext {		// Cipher text structure:  cipher pointer to ciphertext on heap & size.
-	char * ciphertextptr;
 	int ciphersize;
+	char * ciphertextptr;
 	char * plaintextptr;
 };
 
 struct key {			// Key structure:  cipher character, frequency, plain character, keysize; global declaration
+	int keysize;
 	char cipherchar[128];
 	int frequency[128];
 	char plainchar[128];
-	int keysize;
 };
 
 void Display_Menu();
@@ -478,21 +480,39 @@ int Error_Trap(Test, LowerBound, UpperBound)
 void Save_Cipher (struct ciphertext *Cipher)
 
 //  Saves the current cipher text & details as user defined file
-//  Save cipher & key together?
+//  TO DO:  Save cipher & key together, fix to use fprintf?
 
 {
 	char FileName[32] = { 0 };
-	int namelen = 0;
+	int namelen, n = 0;
 	FILE *fp;
 	printf("Please enter a cipher file name (cipher.txt will be appended automatically): ");
 	fgets (FileName, 32, stdin);
 	namelen = strlen (FileName);
 	FileName[namelen - 1] = 0;
 	strcat(FileName, "cipher.txt");
-	fp = fopen (FileName, "w");
 	printf("DEBUG - File Name is %s \n", FileName);
-	fwrite (& (*Cipher), sizeof(struct ciphertext), 1, fp);
+
+	fp = fopen (FileName, "w");
+	fwrite ( &( (*Cipher).ciphersize ), sizeof(int), 1, fp);		// Save the ciphersize to file
 	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	while (n <= (*Cipher).ciphersize)				// Save the ciphertext to the file
+	{
+		fwrite( &((*Cipher).ciphertextptr[n]), sizeof(char), 1, fp);
+		n++;
+	}
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	while (n <= (*Cipher).ciphersize)				// Save the plaintext to the file
+	{
+		fwrite( &((*Cipher).plaintextptr[n]), sizeof(char), 1, fp);
+		n++;
+	}
+	fclose (fp);
+
 	return;
 }
 
