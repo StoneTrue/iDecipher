@@ -32,9 +32,9 @@
 //
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
-//  TO DO:  save and open and existing cipher & key files for analysis
-//  TO DO:  enter cipher from .txt file
 //  TO DO:  Implement menu & work flow structure above
+//  TO DO:  open an existing cipher & key files for analysis; fix function inputs & remove unneeded
+//  TO DO:  enter cipher from .txt file
 //  TO DO:  crib-checker & plain-checker algorithms
 //  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
 
@@ -57,14 +57,13 @@ struct key {			// Key structure:  cipher character, frequency, plain character, 
 };
 
 void Display_Menu();
-void Enter_Cipher_Text(struct ciphertext *Cipher);
-void Open_File();
+void Enter_Cipher_Text(struct ciphertext *Cipher, struct key *Key);
+void Open_Data_File(struct ciphertext *Cipher, struct key *Key);
 void Basic_Analysis(struct ciphertext *Cipher, struct key *Key);
-void Manual_Key_Entry(struct key *Key);
+void Manual_Key_Entry(struct ciphertext *Cipher, struct key *Key);
 void Display_Plaintext();
 int Error_Trap(int, int, int);
-void Save_Cipher (struct ciphertext *Cipher);
-void Save_Key (struct key *Key);
+void Save_Data_File (struct ciphertext *Cipher, struct key *Key);
 
 int CharSiteSizeGlob = 128;	// ASCII character set size assumed
 
@@ -100,16 +99,16 @@ int main()
 			switch (Option[0])
 			{
 				case '1':
-					Enter_Cipher_Text(&Cipher1);
+					Enter_Cipher_Text(&Cipher1, &Key1);
 					break;
 				case '2':
-					Open_File(&Cipher1);
+					Open_Data_File(&Cipher1, &Key1);
 					break;
 				case '3':
 					Basic_Analysis(&Cipher1, &Key1);
 					break;
 				case '4':
-					Manual_Key_Entry(&Key1);
+					Manual_Key_Entry(&Cipher1, &Key1);
 					break;
 				case '6':
 					Display_Plaintext(&Cipher1, &Key1);
@@ -133,7 +132,7 @@ int main()
 }
 
 
-void Enter_Cipher_Text(struct ciphertext *Cipher)
+void Enter_Cipher_Text(struct ciphertext *Cipher, struct key *Key)
 
 //  Enter cipher from stdin, return a pointer & TO DO:  allow entry from file
 
@@ -146,10 +145,10 @@ void Enter_Cipher_Text(struct ciphertext *Cipher)
 		switch (Pick[0])
 		{
 			case 'Y':
-				Save_Cipher(Cipher);
+				Save_Data_File(Cipher, Key);
 				break;
 			case 'y':
-				Save_Cipher(Cipher);
+				Save_Data_File(Cipher, Key);
 				break;
 			case 'N':
 				return;
@@ -211,9 +210,9 @@ void Enter_Cipher_Text(struct ciphertext *Cipher)
 	return;
 }
 
-void Open_File(struct ciphertext *Cipher)
+void Open_Data_File(struct ciphertext *Cipher, struct key *Key)
 
-//  Opens an existing cipher and key file for continued analysis
+//  Opens an existing cipher and key file for continued analysis; NOT DONE YET
 
 {
 	char FileName[32] = { 0 };
@@ -261,10 +260,10 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 		switch (Pick[0])
 		{
 			case 'Y':
-				Save_Key(Key);
+				Save_Data_File(Cipher, Key);
 				break;
 			case 'y':
-				Save_Key(Key);
+				Save_Data_File(Cipher, Key);
 				break;
 			case 'N':
 				return;
@@ -304,6 +303,7 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 				{
 					(*Key).cipherchar[m] = (*Cipher).ciphertextptr[n];
 					(*Key).keysize++;
+					(*Key).frequency[m]++;
 					break;
 				}
 			}
@@ -314,14 +314,14 @@ void Basic_Analysis(struct ciphertext *Cipher, struct key *Key)
 
 	for (n = 0; n < (*Key).keysize; n++)
 	{
-		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n], (*Key).frequency[n]+1 );
+		printf ("DEBUG - Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n], (*Key).frequency[n] );
 	}
 
 	return;
 }
 
 
-void Manual_Key_Entry(struct key *Key)
+void Manual_Key_Entry(struct ciphertext *Cipher, struct key *Key)
 
 // User manually enters a plain for each cipher character and displays plaintext
 // Displays whole list and then asks one at a time
@@ -338,10 +338,10 @@ void Manual_Key_Entry(struct key *Key)
 		switch (Pick[0])
 		{
 			case 'Y':
-				Save_Key(Key);			
+				Save_Data_File(Cipher, Key);			
 				break;
 			case 'y':
-				Save_Key(Key);
+				Save_Data_File(Cipher, Key);
 				break;
 			case 'N':
 				return;
@@ -367,14 +367,14 @@ void Manual_Key_Entry(struct key *Key)
 
 	for (n = 0; n < (*Key).keysize; n++)
 	{
-		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n]+1 ));
+		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n] ));
 	}
 
 	printf ("\nNow let's go over this line by line...\n");
 
 	for (n = 0; n < (*Key).keysize; n++)
 	{
-		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n]+1 ));
+		printf ("Cipher Character No. %d\t Is \t%c & Occurs \t%d times.\n",( n+1 ), (*Key).cipherchar[n],( (*Key).frequency[n] ));
 		printf ("What do you think the plain character is?  ");
 
 		fgets(Pick, 10, stdin);
@@ -477,63 +477,82 @@ int Error_Trap(Test, LowerBound, UpperBound)
 	return Error;
 }
 
-void Save_Cipher (struct ciphertext *Cipher)
+void Save_Data_File (struct ciphertext *Cipher, struct key *Key)
 
-//  Saves the current cipher text & details as user defined file
-//  TO DO:  Save cipher & key together, fix to use fprintf?
+//  Saves the current cipher text & key details as user defined data file
 
 {
 	char FileName[32] = { 0 };
 	int namelen, n = 0;
 	FILE *fp;
-	printf("Please enter a cipher file name (cipher.txt will be appended automatically): ");
+	printf("Please enter a data file name (.dat will be appended automatically): ");
 	fgets (FileName, 32, stdin);
 	namelen = strlen (FileName);
 	FileName[namelen - 1] = 0;
-	strcat(FileName, "cipher.txt");
+	strcat(FileName, ".dat");
 	printf("DEBUG - File Name is %s \n", FileName);
 
 	fp = fopen (FileName, "w");
-	fwrite ( &( (*Cipher).ciphersize ), sizeof(int), 1, fp);		// Save the ciphersize to file
+	fprintf (fp, "%d \n", (*Cipher).ciphersize);			// Save the ciphersize to file
 	fclose (fp);
 
 	fp = fopen (FileName, "a");
+	n = 0;
 	while (n <= (*Cipher).ciphersize)				// Save the ciphertext to the file
 	{
-		fwrite( &((*Cipher).ciphertextptr[n]), sizeof(char), 1, fp);
+		fprintf (fp, "%c", (*Cipher).ciphertextptr[n]);
 		n++;
 	}
 	fclose (fp);
 
 	fp = fopen (FileName, "a");
+	n = 0;
 	while (n <= (*Cipher).ciphersize)				// Save the plaintext to the file
 	{
-		fwrite( &((*Cipher).plaintextptr[n]), sizeof(char), 1, fp);
+		fprintf(fp, "%c", (*Cipher).plaintextptr[n]);
 		n++;
 	}
+	fprintf (fp, "\n");
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	fprintf (fp, "%d", (*Key).keysize);				// Save the key size to file
+	fprintf (fp, "\n");
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	n = 0;
+	while (n <= (*Key).keysize)					// Save the cipher key character to the file
+	{
+		fprintf (fp, "%c", (*Key).cipherchar[n]);
+		n++;
+	}
+	fprintf (fp, "\n");
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	n = 0;
+	while (n < (*Key).keysize)					// Save the cipher character frequency to the file
+	{
+		fprintf(fp, "%d", (*Key).frequency[n]);
+		n++;
+	}
+	fprintf (fp, "\n");
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	n = 0;
+	while (n <= (*Key).keysize)					// Save the plain key character to the file
+	{
+		fprintf(fp, "%c", (*Key).plainchar[n]);
+		n++;
+	}
+	fprintf (fp, "\n");
 	fclose (fp);
 
 	return;
 }
 
-void Save_Key (struct key *Key)
 
-//  Saves the current key & analysis details as user defined file
-
-{
-	char FileName[32] = { 0 };
-	int namelen = 0;
-	FILE *fp;
-	printf("Please enter a file name (key.txt will be appended automatically): ");
-	fgets (FileName, 32, stdin);
-	namelen = strlen (FileName);
-	FileName[namelen - 1] = 0;
-	strcat(FileName, "key.txt");
-	fp = fopen (FileName, "w");
-	printf("DEBUG - File Name is %s \n", FileName);
-	fwrite (&Key, sizeof(struct key), 1, fp);
-	fclose (fp);
-	return;
-}
 
 
