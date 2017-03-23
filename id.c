@@ -32,7 +32,7 @@
 //
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
-//  TO DO:  Implement menu & work flow structure above
+//  TO DO:  implement menu & work flow structure above
 //  TO DO:  open an existing cipher & key files for analysis; fix function inputs & remove unneeded
 //  TO DO:  enter cipher from .txt file
 //  TO DO:  crib-checker & plain-checker algorithms
@@ -43,20 +43,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct ciphertext {		// Cipher text structure:  cipher pointer to ciphertext on heap & size.
+struct ciphertext {		// Cipher text structure:  size and pointers to ciphertext / plaintext on heap
 	int ciphersize;
 	char * ciphertextptr;
 	char * plaintextptr;
 };
 
-struct key {			// Key structure:  cipher character, frequency, plain character, keysize; global declaration
-	int keysize;
+struct key {			// Key structure:  cipher character, frequency, plain character, keysize
+	int keys
 	char cipherchar[128];
 	int frequency[128];
 	char plainchar[128];
 };
 
-void Display_Menu();
+
+void Enter_New_Cipher(struct ciphertext *Cipher);
+void Load_Cipher_From_File(struct ciphertext *Cipher);
 void Enter_Cipher_Text(struct ciphertext *Cipher, struct key *Key);
 void Open_Data_File(struct ciphertext *Cipher, struct key *Key);
 void Basic_Analysis(struct ciphertext *Cipher, struct key *Key);
@@ -64,6 +66,13 @@ void Manual_Key_Entry(struct ciphertext *Cipher, struct key *Key);
 void Display_Plaintext();
 int Error_Trap(int, int, int);
 void Save_Data_File (struct ciphertext *Cipher, struct key *Key);
+
+// Command line display menus
+void Display_Main_Menu();
+void Display_Enter_New_Cipher_Menu();
+void Display_Open_Ex_Analysis_Menu();
+void Display_Analysis_Menu();
+
 
 int CharSiteSizeGlob = 128;	// ASCII character set size assumed
 
@@ -90,47 +99,79 @@ int main()
 	}
 
 	printf("\nWelcome to iDecipher!\n");
-	Display_Menu();
+	Display_Main_Menu();
 
 	while (1)
 	{
-		if ( Error_Trap(atoi(fgets(Option,10,stdin)), 1, 8) == 1)
+		if ( Error_Trap(atoi(fgets(Option,10,stdin)), 1, 3) == 1)
 		{
 			switch (Option[0])
 			{
 				case '1':
-					Enter_Cipher_Text(&Cipher1, &Key1);
+					Enter_New_Cipher(struct ciphertext *Cipher);
 					break;
 				case '2':
-					Open_Data_File(&Cipher1, &Key1);
+					Open_Ex_Analysis();
 					break;
 				case '3':
-					Basic_Analysis(&Cipher1, &Key1);
-					break;
-				case '4':
-					Manual_Key_Entry(&Cipher1, &Key1);
-					break;
-				case '6':
-					Display_Plaintext(&Cipher1, &Key1);
-					break;
-				case '8':
-					printf("Later, Dude!\n");
+					Save_Data_File(&Cipher, &Key);
 					exit(0);
 				default:
 					printf("\nDEBUG - switch default\n");
 					break;
 			}
 
-			Display_Menu();
+			Display_Main_Menu();
 		}
 		else
 		{
-			printf("Try entering a number 1 - 8\n");
-			Display_Menu();
+			printf("Try entering a number 1 - 3\n");
+			Display_Main_Menu();
 		}
 	}
 }
 
+void Enter_New_Cipher(struct ciphertext *Cipher)
+
+{
+	Display_Enter_New_Cipher_Menu();
+
+	while (1)
+	{
+		if ( Error_Trap(atoi(fgets(Option,10,stdin)), 1, 4) == 1)
+		{
+			switch (Option[0])
+			{
+				case '1':
+					Load_Cipher_From_File(struct ciphertext *Cipher);
+					break;
+				case '2':
+					Enter_Cipher_Text(struct ciphertext *Cipher, struct key *Key);
+					break;
+				case '3':
+					return;
+				case '4':
+					exit(0);
+				default:
+					printf("\nDEBUG - switch default\n");
+					break;
+			}
+
+			Display_Enter_New_Cipher_Menu();
+		}
+		else
+		{
+			printf("Try entering a number 1 - 4\n");
+			Display_Enter_New_Cipher_Menu();
+		}
+	}
+}
+
+void Load_Cipher_From_File(struct ciphertext *Cipher)
+
+{
+
+}
 
 void Enter_Cipher_Text(struct ciphertext *Cipher, struct key *Key)
 
@@ -441,23 +482,6 @@ void Display_Plaintext(struct ciphertext *Cipher, struct key *Key)
 	return;
 }
 
-void Display_Menu()
-
-//  Displays the main menu
-
-{
-	printf("\n1 - Enter a cipher text\n");
-	printf("2 - Read a cipher text from a file\n");
-	printf("3 - Analyze an entered cipher text\n");
-	printf("4 - Enter a key manually\n");
-	printf("5 - Caeser shift!\n");
-	printf("6 - Show plaintext\n");
-	printf("7 - Help\n");
-	printf("8 - Exit\n\n");
-	printf("Enter an option, 1-8:  ");
-	return;
-}
-
 int Error_Trap(Test, LowerBound, UpperBound)
 
 //  Tests user input against upper and lower bounds; returns 1 if good & 0 if bad
@@ -553,6 +577,56 @@ void Save_Data_File (struct ciphertext *Cipher, struct key *Key)
 	return;
 }
 
+void Display_Main_Menu()
 
+//  Displays the main menu
 
+{
+	printf("\n1 - Enter new cipher\n");
+	printf("2 - Open existing analysis *.dat file\n");
+	printf("3 - Exit\n");
+	printf("Please enter a selection, 1 - 3:  ");
+	return;
+}
+
+void Display_Enter_New_Cipher_Menu()
+
+//  Displays the new cipher entry menu
+
+{
+	printf("\n1 - Load new cipher from file (.txt) & go to analysis\n");
+	printf("2 - Enter new cipher manually & go to analysis\n");
+	printf("3 - Return to main menu\n");
+	printf("4 - Exit\n");
+	printf("Please enter a selection, 1 - 4:  ");
+	return;
+}
+
+void Display_Open_Ex_Analysis_Menu()
+
+//  Displays the open existing analysis menu
+
+{
+	printf("\n1 - Open existing analysis .dat file & go to analysis\n");
+	printf("2 - Return to main menu\n");
+	printf("3 - Exit\n");
+	printf("Please enter a selection, 1 - 3:  ");
+	return;
+}
+
+void Display_Analysis_Menu()
+
+//  Displays the analysis menu
+
+{
+	printf("\n1 - Develop key from user defined features & perform frequency analysis\n");
+	printf("2 - Enter a key manually\n");
+	printf("3 - Calculate possible keys from frequency analysis\n");
+	printf("4 - Caeser shift!\n");
+	printf("5 - Check for defined plain words or cribs\n");
+	printf("8 - Return to main menu\n");
+	printf("9 - Exit\n");
+	printf("Please enter a selection, 1 - 9:  ");
+	return;
+}
 
