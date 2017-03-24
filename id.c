@@ -32,7 +32,6 @@
 //
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
-//  TO DO:  implement menu & work flow structure above
 //  TO DO:  open an existing cipher & key files for analysis
 //  TO DO:  enter cipher from .txt file
 //  TO DO:  crib-checker & plain-checker algorithms
@@ -43,7 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct cipherdata {		// Cipher data structure:  size and pointers to ciphertext / plaintext on heap
+struct cipherdata {			// Cipher data structure:  size and pointers to ciphertext / plaintext on heap
 	int ciphersize;
 	int keysize;
 	char cipherchar[128];
@@ -230,33 +229,78 @@ void Open_Data_File(struct cipherdata *Cipher)
 	if ( (*Cipher).ciphertextptr != NULL )
 	{	Save_Data_File(Cipher);			// Offer to save data
 		Clear_Data_File(Cipher);		// Clear all data
-	}
+	}	
 
 	char FileName[32] = { 0 };
 	int namelen, n = 0;
 	FILE *fp;
-
-	printf("Please enter the file name containing the cipher text:  ");
+	printf("Please enter the data file name to retrieve (.dat will be appended automatically): ");
 	fgets (FileName, 32, stdin);
 	namelen = strlen (FileName);
 	FileName[namelen - 1] = 0;
+	strcat(FileName, ".dat");
+	printf("DEBUG - File Name is %s \n", FileName);
 
-	fp = fopen (FileName, "r");
-	if (fp == NULL)
+	fp = fopen (FileName, "r+");
+	//  TO DO:  Test to see if the file opens; fuss if cannot
+	//  TO DO:  Actually read the file into the Cipher structure... HOW?!?
+
+	(*Cipher).ciphersize) = fprintf (fp, "%d \n", ;			// Read the ciphersize 
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	n = 0;
+	while (n <= (*Cipher).ciphersize)				// Read the ciphertext to buffer, put on heap, get pointer
 	{
-		printf("Looks like that was not the correct file name...\n");
-		return;
-	}
-	fread (Cipher, sizeof(struct cipherdata), 1, fp);
-	
-	printf("DEBUG - Read cipher text from file %s is:  ", FileName);
-	while (n <= (*Cipher).ciphersize)
-	{
-		putc((*Cipher).ciphertextptr[n],stdout);
+		fprintf (fp, "%c", (*Cipher).ciphertextptr[n]);
 		n++;
 	}
+	fclose (fp);
 
-	printf ("\nDEBUG - Cipher size is: %d\n", (*Cipher).ciphersize );
+	fp = fopen (FileName, "a");
+	n = 0;
+	while (n <= (*Cipher).ciphersize)				// Read the plaintext to buffer, put on heap, get pointer
+	{
+		fprintf(fp, "%c", (*Cipher).plaintextptr[n]);
+		n++;
+	}
+	fprintf (fp, "\n");
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	fprintf (fp, "%d", (*Cipher).keysize);				// Rad the key size
+	fprintf (fp, "\n");
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	n = 0;
+	while (n <= (*Cipher).keysize)					// Read the cipher key character
+	{
+		fprintf (fp, "%c", (*Cipher).cipherchar[n]);
+		n++;
+	}
+	fprintf (fp, "\n");
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	n = 0;
+	while (n < (*Cipher).keysize)					// Read the cipher character frequency 
+	{
+		fprintf(fp, "%d", (*Cipher).frequency[n]);
+		n++;
+	}
+	fprintf (fp, "\n");
+	fclose (fp);
+
+	fp = fopen (FileName, "a");
+	n = 0;
+	while (n <= (*Cipher).keysize)					// Read the plain key character
+	{
+		fprintf(fp, "%c", (*Cipher).plainchar[n]);
+		n++;
+	}
+	fprintf (fp, "\n");
+	fclose (fp);
 
 	return;
 }
