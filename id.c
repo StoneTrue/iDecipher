@@ -1,40 +1,15 @@
 //  iDecipher!  a set of cryptographic tools by R. Austin
 //
-//  Menu Flow:
-//  1 - Enter new cipher
-//  2 - Open existing analysis .dat file
-//  3 - Exit
-//
-//  1.1 - Load new cipher from file (.txt) & go to analysis
-//  1.2 - Enter new cipher manually (stdin) & go to analysis - COMPLETED
-//  1.3 - Back to top (if something entered, offer to save .dat)
-//  1.4 - Exit (if something entered, offer to save .dat)
-//
-//  2.1 - Open existing analysis .dat file & go to analysis
-//  2.2 - Back to top (if something entered, offer to save .dat)
-//  2.3 - Exit (if something entered, offer to save .dat)
-//
-//  3 - analyze file chosen; default is most recent
-//  analysis options are:
-//  3.1 - develop key from user defined features and perform frequency analysis -COMPLETED
-//  3.3 -  enter a plain key manually - COMPLETED
-//  3.4 -  calculate possible keys from frequency analysis
-//  3.5 -  calculate possible keys from user entered key
-//  3.6 -  do a Caeser shift
-//  3.7 -  wheels
-//  3.8 -  check for defined plain words e.g. rockyou.txt
-//  3.98 - Back to top (if something entered, offer to save .dat)
-//  3.99 - Exit (if something entered, offer to save .dat)
-//
-//  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 //
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
-//
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
 //  TO DO:  open an existing cipher & key files for analysis
 //  TO DO:  enter cipher from .txt file
+//  TO DO:  move to analysis directly from main and cipher entry (in case the user backs up by accident)
 //  TO DO:  crib-checker & plain-checker algorithms
+//  TO DO:  break up into multiple .c, .h, with a makefile
+//  TO DO:  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
 //  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
 
 
@@ -42,7 +17,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct cipherdata {			// Cipher data structure:  size and pointers to ciphertext / plaintext on heap
+//  Global variable declarations
+
+struct cipherdata {			// Cipher data structure:  size and pointers to ciphertext / plaintext on heap; move to .h file
 	int ciphersize;
 	int keysize;
 	char cipherchar[128];
@@ -51,6 +28,10 @@ struct cipherdata {			// Cipher data structure:  size and pointers to ciphertext
 	char * ciphertextptr;
 	char * plaintextptr;
 };
+
+int CharSiteSizeGlob = 128;	// ASCII character set size assumed
+
+//  Function prototypes
 
 void Enter_New_Cipher(struct cipherdata *Cipher);
 void Load_Cipher_From_File(struct cipherdata *Cipher);
@@ -65,14 +46,14 @@ void Save_Data_File (struct cipherdata *Cipher);
 void Clear_Data_File (struct cipherdata *Cipher);
 void Exit_Program(struct cipherdata *Cipher);
 
-// Command line display menus
+// Command line display menus; move to separate *.c file
 void Display_Main_Menu();
 void Display_Enter_New_Cipher_Menu();
 void Display_Open_Ex_Analysis_Menu();
 void Display_Analysis_Menu();
 
 
-int CharSiteSizeGlob = 128;	// ASCII character set size assumed
+//  Main starts here
 
 int main()
 
@@ -98,8 +79,7 @@ int main()
 					Enter_New_Cipher(&Cipher1);
 					break;
 				case '2':
-					printf("\nSorry, open data file does not work yet.\n");					
-					//Open_Data_File(&Cipher1);
+					Open_Data_File(&Cipher1);
 					break;
 				case '3':
 					Exit_Program(&Cipher1);
@@ -224,12 +204,21 @@ void Enter_Cipher_Text(struct cipherdata *Cipher)
 void Open_Data_File(struct cipherdata *Cipher)
 
 //  Opens an existing cipher and key file for continued analysis; NOT DONE YET
+//	int ciphersize;
+//	int keysize;
+//	char cipherchar[keysize];
+//	int frequency[keysize];
+//	char plainchar[keysize];
+//	char * ciphertextptr[ciphersize];
+//	char * plaintextptr[ciphersize];
 
 {
 	if ( (*Cipher).ciphertextptr != NULL )
 	{	Save_Data_File(Cipher);			// Offer to save data
 		Clear_Data_File(Cipher);		// Clear all data
 	}	
+
+	char Buffer[1000] = { 0 };			// Local buffer for cipher & plain texts.
 
 	char FileName[32] = { 0 };
 	int namelen, n = 0;
@@ -243,67 +232,58 @@ void Open_Data_File(struct cipherdata *Cipher)
 
 	fp = fopen (FileName, "r+");
 	//  TO DO:  Test to see if the file opens; fuss if cannot
-	//  TO DO:  Actually read the file into the Cipher structure... HOW?!?
 
-	(*Cipher).ciphersize) = fprintf (fp, "%d \n", ;			// Read the ciphersize 
-	fclose (fp);
+	fgets ( &Buffer[0], sizeof(int), fp);				// Read the ciphersize 
 
-	fp = fopen (FileName, "a");
-	n = 0;
-	while (n <= (*Cipher).ciphersize)				// Read the ciphertext to buffer, put on heap, get pointer
-	{
-		fprintf (fp, "%c", (*Cipher).ciphertextptr[n]);
-		n++;
-	}
-	fclose (fp);
+	(*Cipher).ciphersize = Buffer [0];
 
-	fp = fopen (FileName, "a");
-	n = 0;
-	while (n <= (*Cipher).ciphersize)				// Read the plaintext to buffer, put on heap, get pointer
-	{
-		fprintf(fp, "%c", (*Cipher).plaintextptr[n]);
-		n++;
-	}
-	fprintf (fp, "\n");
-	fclose (fp);
-
-	fp = fopen (FileName, "a");
-	fprintf (fp, "%d", (*Cipher).keysize);				// Rad the key size
-	fprintf (fp, "\n");
-	fclose (fp);
-
-	fp = fopen (FileName, "a");
-	n = 0;
-	while (n <= (*Cipher).keysize)					// Read the cipher key character
-	{
-		fprintf (fp, "%c", (*Cipher).cipherchar[n]);
-		n++;
-	}
-	fprintf (fp, "\n");
-	fclose (fp);
-
-	fp = fopen (FileName, "a");
-	n = 0;
-	while (n < (*Cipher).keysize)					// Read the cipher character frequency 
-	{
-		fprintf(fp, "%d", (*Cipher).frequency[n]);
-		n++;
-	}
-	fprintf (fp, "\n");
-	fclose (fp);
-
-	fp = fopen (FileName, "a");
-	n = 0;
-	while (n <= (*Cipher).keysize)					// Read the plain key character
-	{
-		fprintf(fp, "%c", (*Cipher).plainchar[n]);
-		n++;
-	}
-	fprintf (fp, "\n");
-	fclose (fp);
-
-	return;
+	printf("DEBUT - ciphersize is %d", (*Cipher).ciphersize);
 }
+//	n = 0;
+//	while (n <= (*Cipher).ciphersize)				// Read the ciphertext to buffer, put on heap, get pointer
+//	{
+//		fprintf (fp, "%c", (*Cipher).ciphertextptr[n]);
+//		n++;
+//	}
+
+//	n = 0;
+//	while (n <= (*Cipher).ciphersize)				// Read the plaintext to buffer, put on heap, get pointer
+//	{
+//		fprintf(fp, "%c", (*Cipher).plaintextptr[n]);
+//		n++;
+//	}
+//	fprintf (fp, "\n");
+
+//	fprintf (fp, "%d", (*Cipher).keysize);				// Rad the key size
+//	fprintf (fp, "\n");
+
+//	n = 0;
+//	while (n <= (*Cipher).keysize)					// Read the cipher key character
+//	{
+//		fprintf (fp, "%c", (*Cipher).cipherchar[n]);
+//		n++;
+//	}
+//	fprintf (fp, "\n");
+//
+//	n = 0;
+//	while (n < (*Cipher).keysize)					// Read the cipher character frequency 
+//	{
+//		fprintf(fp, "%d", (*Cipher).frequency[n]);
+//		n++;
+//	}
+//	fprintf (fp, "\n");
+//
+//	n = 0;
+//	while (n <= (*Cipher).keysize)					// Read the plain key character
+//	{
+//		fprintf(fp, "%c", (*Cipher).plainchar[n]);
+//		n++;
+//	}
+//	fprintf (fp, "\n");
+
+//	fclose (fp);
+//	return;
+//}
 
 void Choose_Analysis(struct cipherdata *Cipher)
 
@@ -553,18 +533,14 @@ void Save_Data_File (struct cipherdata *Cipher)
 
 	fp = fopen (FileName, "w");
 	fprintf (fp, "%d \n", (*Cipher).ciphersize);			// Save the ciphersize to file
-	fclose (fp);
 
-	fp = fopen (FileName, "a");
 	n = 0;
 	while (n <= (*Cipher).ciphersize)				// Save the ciphertext to the file
 	{
 		fprintf (fp, "%c", (*Cipher).ciphertextptr[n]);
 		n++;
 	}
-	fclose (fp);
 
-	fp = fopen (FileName, "a");
 	n = 0;
 	while (n <= (*Cipher).ciphersize)				// Save the plaintext to the file
 	{
@@ -572,14 +548,10 @@ void Save_Data_File (struct cipherdata *Cipher)
 		n++;
 	}
 	fprintf (fp, "\n");
-	fclose (fp);
 
-	fp = fopen (FileName, "a");
 	fprintf (fp, "%d", (*Cipher).keysize);				// Save the key size to file
 	fprintf (fp, "\n");
-	fclose (fp);
 
-	fp = fopen (FileName, "a");
 	n = 0;
 	while (n <= (*Cipher).keysize)					// Save the cipher key character to the file
 	{
@@ -587,9 +559,7 @@ void Save_Data_File (struct cipherdata *Cipher)
 		n++;
 	}
 	fprintf (fp, "\n");
-	fclose (fp);
 
-	fp = fopen (FileName, "a");
 	n = 0;
 	while (n < (*Cipher).keysize)					// Save the cipher character frequency to the file
 	{
@@ -597,9 +567,7 @@ void Save_Data_File (struct cipherdata *Cipher)
 		n++;
 	}
 	fprintf (fp, "\n");
-	fclose (fp);
 
-	fp = fopen (FileName, "a");
 	n = 0;
 	while (n <= (*Cipher).keysize)					// Save the plain key character to the file
 	{
@@ -607,8 +575,8 @@ void Save_Data_File (struct cipherdata *Cipher)
 		n++;
 	}
 	fprintf (fp, "\n");
-	fclose (fp);
 
+	fclose (fp);
 	return;
 }
 
