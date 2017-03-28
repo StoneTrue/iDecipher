@@ -4,12 +4,10 @@
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
-//  TO DO:  open an existing cipher & key files for analysis; can open, but not analyze yet (probable clears)
-//  TO DO:  enter cipher from .txt file
-//  TO DO:  move to analysis directly from main and cipher entry (in case the user backs up by accident)
+//  TO DO:  some menu flow issues, e.g. move to analysis directly from main and cipher entry (in case the user backs up by accident)
 //  TO DO:  crib-checker & plain-checker algorithms
 //  TO DO:  break up into multiple .c, .h, with a makefile
-//  TO DO:  Will need some utilities such as make all cipher CAPS, remove spaces, etc.
+//  TO DO:  utilities such as make all cipher CAPS, remove spaces, etc.
 //  TO DO:  reorder manual entry to asks most frequent first?  May reorder on key entry in the first place?
 
 
@@ -114,7 +112,7 @@ void Enter_New_Cipher(struct cipherdata *Cipher)
 			{
 				case '1':
 					Load_Cipher_From_File(Cipher);
-					//Choose_Analysis(Cipher);
+					Choose_Analysis(Cipher);
 					break;
 				case '2':
 					Enter_Cipher_Text(Cipher);
@@ -144,7 +142,68 @@ void Load_Cipher_From_File(struct cipherdata *Cipher)
 //  Enter cipher from .txt file
 
 {
-	printf("\nSorry, load cipher from file does not do anything yet.\n");
+	if ( (*Cipher).ciphertextptr != NULL )
+	{	Save_Data_File(Cipher);			// Offer to save data
+		Clear_Data_File(Cipher);		// Clear all data
+	}	
+
+	char CipherBuffer[10000] = { 0 };
+	char c = 0;
+
+	char FileName[32] = { 0 };
+	int namelen, n = 0;
+	FILE *fp;
+	printf("Please enter the file name to retrieve (.txt will be appended automatically): ");
+	fgets (FileName, 32, stdin);
+	namelen = strlen (FileName);
+	FileName[namelen - 1] = 0;
+	strcat(FileName, ".txt");
+	printf("DEBUG - File Name is %s \n", FileName);
+
+	fp = fopen (FileName, "r+");
+	if (fp == 0)
+	{
+		printf("Did you get the filename right?  Try again...\n");
+		return;
+	}
+
+	int Test = feof (fp);
+	while (Test != 1)
+	{
+		c = getc(fp);
+		CipherBuffer[n] = c;
+		n++;					// TO DO:  Should this be ++n?
+		Test = feof (fp);
+	}
+
+	CipherBuffer[n] = '\0';				// A null on the end.
+
+	(*Cipher).ciphersize = n - 2;			// The null at the end is not part of the cipher
+
+	printf("DEBUG - ciphersize is %d", (*Cipher).ciphersize);
+
+	(*Cipher).ciphertextptr = (char *) malloc((*Cipher).ciphersize);
+	(*Cipher).plaintextptr = (char *) malloc((*Cipher).ciphersize);
+
+	if ( ( (*Cipher).ciphertextptr == NULL) || ( (*Cipher).plaintextptr == NULL) )
+	{
+		printf ("Whoa!  Something happened.  Let's try again.\n");
+		return;
+	}
+
+	n = 0;
+
+	printf ("\nDEBUG - cipher text is: ");
+
+	while (n <= (*Cipher).ciphersize)
+	{
+		(*Cipher).ciphertextptr[n] = CipherBuffer[n];
+		putc((*Cipher).ciphertextptr[n],stdout);
+		n++;
+	}
+
+	printf ("\n");
+
 	return;
 }
 
@@ -158,7 +217,7 @@ void Enter_Cipher_Text(struct cipherdata *Cipher)
 		Clear_Data_File(Cipher);		// Clear all data
 	}	
 
-	char CipherBuffer[1000] = { 0 };
+	char CipherBuffer[10000] = { 0 };
 	char c = 0;
 	int n = 0;
 
@@ -218,13 +277,17 @@ void Open_Data_File(struct cipherdata *Cipher)
 	namelen = strlen (FileName);
 	FileName[namelen - 1] = 0;
 	strcat(FileName, ".dat");
-	printf("DEBUG - File Name is %s \n", FileName);
+	printf("\nDEBUG - File Name is %s \n", FileName);
 
 	fp = fopen (FileName, "r+");
-	//  TO DO:  Test to see if the file opens; fuss if cannot
+	if (fp == 0)
+	{
+		printf("Did you get the filename right?  Try again...\n");
+		return;
+	}
 
 	fscanf(fp, "%d", &( (*Cipher).ciphersize) );				// Read the cipher size from file
-	printf("DEBUG - ciphersize is %d", (*Cipher).ciphersize );
+	printf("DEBUG - ciphersize is %d\n", (*Cipher).ciphersize );
 
 	(*Cipher).ciphertextptr = (char *) malloc((*Cipher).ciphersize);	// Allocate heap for cipher and plain text
 	(*Cipher).plaintextptr = (char *) malloc((*Cipher).ciphersize);
@@ -237,7 +300,7 @@ void Open_Data_File(struct cipherdata *Cipher)
 
 	fseek (fp, 2, SEEK_CUR);
 	n = 0;
-	printf ("\nCipher text is: ");
+	printf ("DEBUG - Cipher text is: ");
 	while ( n < (*Cipher).ciphersize )					// Read the cipher text from the file & put it on the heap
 	{
 		(*Cipher).ciphertextptr[n] = fgetc(fp);
@@ -248,7 +311,7 @@ void Open_Data_File(struct cipherdata *Cipher)
 
 	fseek (fp, 1, SEEK_CUR);
 	n = 0;
-	printf ("\nPlain text is: ");
+	printf ("DEBUG - Plain text is: ");
 	while (n < (*Cipher).ciphersize)					// Read the plain text from the file & put it on the heap
 	{
 		(*Cipher).plaintextptr[n] = fgetc(fp);
@@ -259,11 +322,11 @@ void Open_Data_File(struct cipherdata *Cipher)
 
 	fseek (fp, 1, SEEK_CUR);
 	fscanf(fp, "%d", &( (*Cipher).keysize) );				// Read the key size from file
-	printf("DEBUG - keysize is %d", (*Cipher).keysize );
+	printf("DEBUG - keysize is %d \n", (*Cipher).keysize );
 
 	fseek (fp, 1, SEEK_CUR);
 	n = 0;
-	printf ("\nCipher key characters are: ");
+	printf ("DEBUG - Cipher key characters are: ");
 	while (n < (*Cipher).keysize)						// Read the cipher key characters from the file
 	{
 		(*Cipher).cipherchar[n] = fgetc(fp);
@@ -274,7 +337,7 @@ void Open_Data_File(struct cipherdata *Cipher)
 
 	fseek (fp, 2, SEEK_CUR);
 	n = 0;
-	printf ("\nFrequency of key characters is: ");
+	printf ("DEBUG - Frequency of key characters is: ");
 	while (n < (*Cipher).keysize)						// Read the frequency of cipher key character from the file
 	{
 		(*Cipher).frequency[n] = fgetc(fp);
@@ -285,7 +348,7 @@ void Open_Data_File(struct cipherdata *Cipher)
 
 	fseek (fp, 1, SEEK_CUR);
 	n = 0;
-	printf ("\nPlain key characters are: ");
+	printf ("DEBUG - Plain key characters are: ");
 	while (n < (*Cipher).keysize)						// Read the plain key characters from the file
 	{
 		(*Cipher).plainchar[n] = fgetc(fp);
@@ -293,6 +356,7 @@ void Open_Data_File(struct cipherdata *Cipher)
 		n++;
 	}
 	printf ("\n");
+
 	fclose (fp);
 	return;
 }
