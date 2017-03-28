@@ -262,7 +262,7 @@ void Enter_Cipher_Text(struct cipherdata *Cipher)
 
 void Open_Data_File(struct cipherdata *Cipher)
 
-//  Opens an existing cipher and key file for continued analysis; NOT DONE YET
+//  Opens an existing cipher and key file for continued analysis
 
 {
 	if ( (*Cipher).ciphertextptr != NULL )
@@ -271,6 +271,7 @@ void Open_Data_File(struct cipherdata *Cipher)
 	}	
 
 	char FileName[32] = { 0 };
+	char c =  0;
 	int namelen, n = 0;
 	FILE *fp;
 	printf("Please enter the data file name to retrieve (.dat will be appended automatically): ");
@@ -330,9 +331,13 @@ void Open_Data_File(struct cipherdata *Cipher)
 	printf ("DEBUG - Cipher key characters are: ");
 	while (n < (*Cipher).keysize)						// Read the cipher key characters from the file
 	{
-		(*Cipher).cipherchar[n] = fgetc(fp);
-		putc((*Cipher).cipherchar[n],stdout);
-		n++;
+		fscanf( fp, "%c", c);
+		if (&c != " ")
+		{
+			(*Cipher).cipherchar[n] = c;
+			printf( "%c ", (*Cipher).cipherchar[n] );
+			n++;
+		}
 	}
 	printf ("\n");
 
@@ -632,7 +637,7 @@ void Save_Data_File (struct cipherdata *Cipher)
 	n = 0;
 	while (n <= (*Cipher).keysize)					// Save the cipher key character to the file
 	{
-		fprintf (fp, "%c", (*Cipher).cipherchar[n]);
+		fprintf (fp, "%c ", (*Cipher).cipherchar[n]);
 		n++;
 	}
 	fprintf (fp, "\n");
@@ -640,7 +645,7 @@ void Save_Data_File (struct cipherdata *Cipher)
 	n = 0;
 	while (n < (*Cipher).keysize)					// Save the cipher character frequency to the file
 	{
-		fprintf(fp, "%d", (*Cipher).frequency[n]);
+		fprintf(fp, "%d ", (*Cipher).frequency[n]);
 		n++;
 	}
 	fprintf (fp, "\n");
@@ -648,7 +653,7 @@ void Save_Data_File (struct cipherdata *Cipher)
 	n = 0;
 	while (n <= (*Cipher).keysize)					// Save the plain key character to the file
 	{
-		fprintf(fp, "%c", (*Cipher).plainchar[n]);
+		fprintf(fp, "%c ", (*Cipher).plainchar[n]);
 		n++;
 	}
 	fprintf (fp, "\n");
