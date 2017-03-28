@@ -4,6 +4,7 @@
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
+//  TO DO:  open data file reads frequency as char, not int, and displays ASCII (whoops)
 //  TO DO:  some menu flow issues, e.g. move to analysis directly from main and cipher entry (in case the user backs up by accident)
 //  TO DO:  crib-checker & plain-checker algorithms
 //  TO DO:  break up into multiple .c, .h, with a makefile
@@ -340,8 +341,8 @@ void Open_Data_File(struct cipherdata *Cipher)
 	printf ("DEBUG - Frequency of key characters is: ");
 	while (n < (*Cipher).keysize)						// Read the frequency of cipher key character from the file
 	{
-		(*Cipher).frequency[n] = fgetc(fp);
-		putc((*Cipher).frequency[n],stdout);
+		(*Cipher).frequency[n] = (int) fgetc(fp);
+		putc( (*Cipher).frequency[n], stdout);
 		n++;
 	}
 	printf ("\n");
@@ -352,7 +353,7 @@ void Open_Data_File(struct cipherdata *Cipher)
 	while (n < (*Cipher).keysize)						// Read the plain key characters from the file
 	{
 		(*Cipher).plainchar[n] = fgetc(fp);
-		putc((*Cipher).plainchar[n],stdout);
+		putc((*Cipher).plainchar[n], stdout);
 		n++;
 	}
 	printf ("\n");
