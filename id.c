@@ -5,6 +5,7 @@
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
 //  TO DO:  crib-checker & plain-checker algorithms
+//  TO DO:  frequency checker
 //  TO DO:  some menu flow issues, e.g. move to analysis directly from main and cipher entry (in case the user backs up by accident)
 //  TO DO:  break up into multiple .c, .h, with a makefile
 //  TO DO:  utilities such as make all cipher CAPS, remove spaces, etc.
@@ -34,6 +35,7 @@ int CharSiteSizeGlob = 128;	// ASCII character set size assumed
 void Enter_New_Cipher(struct cipherdata *Cipher);
 void Load_Cipher_From_File(struct cipherdata *Cipher);
 void Enter_Cipher_Text(struct cipherdata *Cipher);
+void Open_Ex_Analysis(struct cipherdata *Cipher);
 void Open_Data_File(struct cipherdata *Cipher);
 void Choose_Analysis(struct cipherdata *Cipher);
 void Basic_Analysis(struct cipherdata *Cipher);
@@ -77,8 +79,7 @@ int main()
 					Enter_New_Cipher(&Cipher1);
 					break;
 				case '2':
-					Open_Data_File(&Cipher1);
-					Choose_Analysis(&Cipher1);
+					Open_Ex_Analysis(&Cipher1);
 					break;
 				case '3':
 					Exit_Program(&Cipher1);
@@ -227,7 +228,7 @@ void Enter_Cipher_Text(struct cipherdata *Cipher)
 	{
 		c = getc(stdin);
 		CipherBuffer[n] = c;
-		n++;					// TO DO:  Should this be ++n?
+		n++;
 	}
 
 	CipherBuffer[n] = '\0';				// A null on the end.
@@ -257,6 +258,42 @@ void Enter_Cipher_Text(struct cipherdata *Cipher)
 	printf ("\n");
 
 	return;
+}
+
+void Open_Ex_Analysis(struct cipherdata *Cipher)
+
+{
+	Display_Open_Ex_Analysis_Menu();
+
+	char Option[10] = { 0 };
+
+	while (1)
+	{
+		if ( Error_Trap(atoi(fgets(Option,10,stdin)), 1, 3) == 1)
+		{
+			switch (Option[0])
+			{
+				case '1':
+					Open_Data_File(Cipher);
+					Choose_Analysis(Cipher);
+					break;
+				case '2':
+					return;
+				case '3':
+					Exit_Program(Cipher);
+				default:
+					printf("\nDEBUG - switch default\n");
+					break;
+			}
+
+			Display_Open_Ex_Analysis_Menu();
+		}
+		else
+		{
+			printf("Try entering a number 1 - 3\n");
+			Display_Open_Ex_Analysis_Menu();
+		}
+	}
 }
 
 void Open_Data_File(struct cipherdata *Cipher)
@@ -783,7 +820,7 @@ void Display_Analysis_Menu()
 	printf("3 - Calculate possible keys from frequency analysis\n");
 	printf("4 - Caeser shift!\n");
 	printf("5 - Check for defined plain words or cribs\n");
-	printf("8 - Return to cipher entry menu\n");
+	printf("8 - Return to open analysis menu\n");
 	printf("9 - Exit\n");
 	printf("\nPlease enter a selection, 1 - 9:  ");
 	return;
