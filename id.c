@@ -4,7 +4,7 @@
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
-//  TO DO:  open data file reads frequency as char, not int, and displays ASCII (whoops)
+//  TO DO:  open data file does not work on second open
 //  TO DO:  some menu flow issues, e.g. move to analysis directly from main and cipher entry (in case the user backs up by accident)
 //  TO DO:  crib-checker & plain-checker algorithms
 //  TO DO:  break up into multiple .c, .h, with a makefile
@@ -271,8 +271,8 @@ void Open_Data_File(struct cipherdata *Cipher)
 	}	
 
 	char FileName[32] = { 0 };
-	char c =  0;
-	int namelen, n = 0;
+	char Buffer[256] = { 0 };			// A buffer to read strings into
+	int namelen, n, m = 0;
 	FILE *fp;
 	printf("Please enter the data file name to retrieve (.dat will be appended automatically): ");
 	fgets (FileName, 32, stdin);
@@ -288,10 +288,12 @@ void Open_Data_File(struct cipherdata *Cipher)
 		return;
 	}
 
-	fscanf(fp, "%d", &( (*Cipher).ciphersize) );				// Read the cipher size from file
+	// Read the cipher size from file
+	fscanf(fp, "%d", &( (*Cipher).ciphersize) );
 	printf("DEBUG - ciphersize is %d\n", (*Cipher).ciphersize );
 
-	(*Cipher).ciphertextptr = (char *) malloc((*Cipher).ciphersize);	// Allocate heap for cipher and plain text
+	// Allocate heap for cipher and plain text
+	(*Cipher).ciphertextptr = (char *) malloc((*Cipher).ciphersize);
 	(*Cipher).plaintextptr = (char *) malloc((*Cipher).ciphersize);
 
 	if ( ( (*Cipher).ciphertextptr == NULL) || ( (*Cipher).plaintextptr == NULL) )
@@ -300,10 +302,11 @@ void Open_Data_File(struct cipherdata *Cipher)
 		return;
 	}
 
+	// Read the cipher text from the file & put it on the heap
 	fseek (fp, 2, SEEK_CUR);
 	n = 0;
 	printf ("DEBUG - Cipher text is: ");
-	while ( n < (*Cipher).ciphersize )					// Read the cipher text from the file & put it on the heap
+	while ( n < (*Cipher).ciphersize )
 	{
 		(*Cipher).ciphertextptr[n] = fgetc(fp);
 		putc((*Cipher).ciphertextptr[n],stdout);
@@ -311,10 +314,11 @@ void Open_Data_File(struct cipherdata *Cipher)
 	}
 	printf ("\n");
 
+	// Read the plain text from the file & put it on the heap
 	fseek (fp, 1, SEEK_CUR);
 	n = 0;
 	printf ("DEBUG - Plain text is: ");
-	while (n < (*Cipher).ciphersize)					// Read the plain text from the file & put it on the heap
+	while (n < (*Cipher).ciphersize)
 	{
 		(*Cipher).plaintextptr[n] = fgetc(fp);
 		putc((*Cipher).plaintextptr[n],stdout);
@@ -322,43 +326,70 @@ void Open_Data_File(struct cipherdata *Cipher)
 	}
 	printf ("\n");
 
-	fseek (fp, 1, SEEK_CUR);
-	fscanf(fp, "%d", &( (*Cipher).keysize) );				// Read the key size from file
+	// Read the key size from file
+	fseek (fp, 2, SEEK_CUR);
+	fscanf(fp, "%d", &( (*Cipher).keysize) );
 	printf("DEBUG - keysize is %d \n", (*Cipher).keysize );
 
-	fseek (fp, 1, SEEK_CUR);
-	n = 0;
-	printf ("DEBUG - Cipher key characters are: ");
-	while (n < (*Cipher).keysize)						// Read the cipher key characters from the file
-	{
-		fscanf( fp, "%c", c);
-		if (&c != " ")
-		{
-			(*Cipher).cipherchar[n] = c;
-			printf( "%c ", (*Cipher).cipherchar[n] );
-			n++;
-		}
-	}
-	printf ("\n");
-
+	// Read the cipher key characters from the file
 	fseek (fp, 2, SEEK_CUR);
 	n = 0;
-	printf ("DEBUG - Frequency of key characters is: ");
-	while (n < (*Cipher).keysize)						// Read the frequency of cipher key character from the file
+	m = 0;
+	fgets (Buffer, sizeof(Buffer), fp);
+	printf ("DEBUG - Cipher key characters are: ");
+	while (Buffer[n] != '\0')
 	{
-		(*Cipher).frequency[n] = (int) fgetc(fp);
-		putc( (*Cipher).frequency[n], stdout);
+		if (Buffer[n] != ' ')
+		{
+			(*Cipher).cipherchar[m] = Buffer[n];
+			printf( "%c ", (*Cipher).cipherchar[m] );
+			m++;
+		}
 		n++;
 	}
 	printf ("\n");
 
-	fseek (fp, 1, SEEK_CUR);
+	// Read the frequency of cipher characters from the file
+	fseek (fp, 2, SEEK_CUR);
 	n = 0;
-	printf ("DEBUG - Plain key characters are: ");
-	while (n < (*Cipher).keysize)						// Read the plain key characters from the file
+	m = 0;
+	memset( Buffer, 1, sizeof(Buffer) );
+	fgets (Buffer, sizeof(Buffer), fp);
+	int c = 0;
+	char LocalBuff[256] = { 0 };
+	printf ("DEBUG - Frequency of cipher characters are: ");
+	while (Buffer[n] != '\n')
 	{
-		(*Cipher).plainchar[n] = fgetc(fp);
-		putc((*Cipher).plainchar[n], stdout);
+		memset( LocalBuff, 0, sizeof(LocalBuff) );
+		c = 0;
+		while (Buffer[n] != ' ')
+		{
+			LocalBuff[c] = Buffer[n];
+			c++;
+			n++;
+		}
+		(*Cipher).frequency[m] = atoi(LocalBuff);
+		printf( "%d ", (*Cipher).frequency[m] );
+		m++;
+		n++;
+	}
+	printf ("\n");
+
+	// Read the plain key characters from the file
+	fseek (fp, 2, SEEK_CUR);
+	n = 0;
+	m = 0;
+	memset( Buffer, 0, sizeof(Buffer) );
+	fgets (Buffer, sizeof(Buffer), fp);
+	printf ("DEBUG - Plain key characters are: ");
+	while (Buffer[n] != '\0')
+	{
+		if (Buffer[n] != ' ')
+		{
+			(*Cipher).plainchar[m] = Buffer[n];
+			printf( "%c ", (*Cipher).plainchar[m] );
+			m++;
+		}
 		n++;
 	}
 	printf ("\n");
@@ -613,45 +644,54 @@ void Save_Data_File (struct cipherdata *Cipher)
 	strcat(FileName, ".dat");
 	printf("DEBUG - File Name is %s \n", FileName);
 
+	// Save the ciphersize to file
 	fp = fopen (FileName, "w");
-	fprintf (fp, "%d \n", (*Cipher).ciphersize);			// Save the ciphersize to file
+	fprintf (fp, "%d \n", (*Cipher).ciphersize);
+	fprintf (fp, "\n");
 
+	// Save the ciphertext to the file
 	n = 0;
-	while (n <= (*Cipher).ciphersize)				// Save the ciphertext to the file
+	while (n <= (*Cipher).ciphersize)
 	{
 		fprintf (fp, "%c", (*Cipher).ciphertextptr[n]);
 		n++;
 	}
+	fprintf (fp, "\n");
 
+	// Save the plaintext to the file
 	n = 0;
-	while (n <= (*Cipher).ciphersize)				// Save the plaintext to the file
+	while (n <= (*Cipher).ciphersize)
 	{
 		fprintf(fp, "%c", (*Cipher).plaintextptr[n]);
 		n++;
 	}
 	fprintf (fp, "\n");
 
-	fprintf (fp, "%d", (*Cipher).keysize);				// Save the key size to file
+	// Save the key size to file
+	fprintf (fp, "%d", (*Cipher).keysize);
 	fprintf (fp, "\n");
 
+	// Save the cipher key character to the file
 	n = 0;
-	while (n <= (*Cipher).keysize)					// Save the cipher key character to the file
+	while (n <= (*Cipher).keysize)
 	{
 		fprintf (fp, "%c ", (*Cipher).cipherchar[n]);
 		n++;
 	}
 	fprintf (fp, "\n");
 
+	// Save the cipher character frequency to the file
 	n = 0;
-	while (n < (*Cipher).keysize)					// Save the cipher character frequency to the file
+	while (n < (*Cipher).keysize)
 	{
 		fprintf(fp, "%d ", (*Cipher).frequency[n]);
 		n++;
 	}
 	fprintf (fp, "\n");
 
+	// Save the plain key character to the file
 	n = 0;
-	while (n <= (*Cipher).keysize)					// Save the plain key character to the file
+	while (n <= (*Cipher).keysize)
 	{
 		fprintf(fp, "%c ", (*Cipher).plainchar[n]);
 		n++;
