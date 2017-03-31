@@ -4,8 +4,8 @@
 //  Naming convention:  Function_Call, LocalVariable, GlobalVariableGlob, structuretype.object, LocalVariablePtr
 //  Note that n, m, Pick and similar items are counters or inputs and can be reused in the same function.
 //
-//  TO DO:  crib-checker & plain-checker algorithms
-//  TO DO:  frequency checker
+//  TO DO:  frequency checker & plain checker
+//  TO DO:  crib-checker
 //  TO DO:  some menu flow issues, e.g. move to analysis directly from main and cipher entry (in case the user backs up by accident)
 //  TO DO:  break up into multiple .c, .h, with a makefile
 //  TO DO:  utilities such as make all cipher CAPS, remove spaces, etc.
@@ -40,6 +40,7 @@ void Open_Data_File(struct cipherdata *Cipher);
 void Choose_Analysis(struct cipherdata *Cipher);
 void Basic_Analysis(struct cipherdata *Cipher);
 void Manual_Key_Entry(struct cipherdata *Cipher);
+void Freq_Checker (struct cipherdata *Cipher);
 void Display_Plaintext(struct cipherdata *Cipher);
 int Error_Trap(int, int, int);
 void Save_Data_File (struct cipherdata *Cipher);
@@ -64,6 +65,7 @@ int main()
 	//  Define & initialize Cipher1; used throughout
 
 	struct cipherdata Cipher1;
+	(Cipher1).ciphersize = 0;
 	Clear_Data_File(&Cipher1);
 
 	printf("\nWelcome to iDecipher!\n");
@@ -453,6 +455,9 @@ void Choose_Analysis(struct cipherdata *Cipher)
 				case '2':
 					Manual_Key_Entry(Cipher);
 					break;
+				case '3':
+					Freq_Checker(Cipher);
+					break;
 				case '8':
 					return;
 				case '9':
@@ -585,6 +590,47 @@ void Manual_Key_Entry(struct cipherdata *Cipher)
 	Display_Plaintext(Cipher);
 
 	return;
+}
+
+void Freq_Checker (struct cipherdata *Cipher)
+
+//  Compares frequency of cipher characters to expected frequency (e.g. in English "e" occurs 12%)
+//  Makes assignment if frequency matches.  Also option to stop after only certain number identified (e.g. quit when 10 found)
+//  Upon completion, checks for common words (e.g. "the", "in", from English); import a wordlist like "rockyou.txt"
+//  Check would be if __% of cipher (user defined?) is in plain; could adjust % down if not hits (e.g. look for 25%, 20%, 15%, etc.)
+//  If no matches, adjust "deadband" for frequency check, e.g. instead of 12% +/- 1%, use +/- 2%
+//  Will need language dependent input file of frequency & words
+//  May hard code the input for now to test algorithms?
+
+//  Offer to save
+//  Clear any entered key, plaintext - BUT NOT THE CIPHER!
+//  Convert cipher & cipher char to all caps; this will adjust ciphersize
+//  Run Basic_Analysis
+//
+//  Load frequencies to check, e.g. f(e) = 12%, in structure?
+//  Load words to check as a different file
+//
+//  Set initial tolerance as multiple of standard deviation (e.g. 0.5*Sigma)
+//  (is Sigma calculated from the sample or a generic value?)
+//
+//  Need a way to not check same key twice?  Wheels?
+//
+//  For each character in frequency key until all assigned or reach minimum (e.g. 10)
+//  	For each character in cipher key
+//		Are they within tolerance?
+//		If so make assignment, break and move to next character in frequency key
+//		If not move to next characer in cipher
+//  Check resulting plain text for words
+//	If enough words, display and check user feedback
+//	If not, decrease tolerance and repeat
+
+//  Provide some counters on number of tests, plain checks, etc.
+//  If high frequency match, but no plain words, is it transposition?  Is it another language?
+
+
+
+{
+	printf("DEBUG - Nothing here yet! Return to sender.\n");
 }
 
 void Display_Plaintext(struct cipherdata *Cipher)
@@ -744,7 +790,19 @@ void Clear_Data_File(struct cipherdata *Cipher)
 {
 	int n = 0;
 
-	free ((*Cipher).ciphertextptr);
+	// Clear allocated memory
+
+	if ( (*Cipher).ciphersize != 0 )
+	{
+		for (n = 0; n < (*Cipher).ciphersize; n++)
+		{
+			(*Cipher).ciphertextptr[n] = 0;
+			(*Cipher).plaintextptr[n] = 0;
+		}
+		free ( (*Cipher).ciphertextptr );
+		free ( (*Cipher).plaintextptr );
+	}
+
 	(*Cipher).ciphersize = 0;
 	(*Cipher).keysize = 0;
 	for (n = 0; n < CharSiteSizeGlob; n ++)
@@ -767,7 +825,7 @@ void Exit_Program(struct cipherdata *Cipher)
 		Save_Data_File(Cipher);
 	}
 	Clear_Data_File(Cipher);
-	printf("Later, Dude!\n");
+	printf("\nLater, Dude!\n\n");
 	exit(0);
 }
 
@@ -820,7 +878,7 @@ void Display_Analysis_Menu()
 	printf("3 - Calculate possible keys from frequency analysis\n");
 	printf("4 - Caeser shift!\n");
 	printf("5 - Check for defined plain words or cribs\n");
-	printf("8 - Return to open analysis menu\n");
+	printf("8 - Return to cipher entry menu\n");
 	printf("9 - Exit\n");
 	printf("\nPlease enter a selection, 1 - 9:  ");
 	return;
