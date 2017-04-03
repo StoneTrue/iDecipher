@@ -640,7 +640,7 @@ void Freq_Checker (struct cipherdata *Cipher)
 
 	char Plain_Char [7] = {'e', 't', 'a', 'o', 'i', 'n', 'h'};
 	int Plain_Freq [7] = {1200, 910, 810, 770, 730, 700, 590};		// Multiply by 10000 so integers, no float required
-	int Tolerance = 50;
+	int Tolerance = 75;
 	int Freq, Exp_Freq_Lower, Exp_Freq_Upper = 0;
 
 	int n, m = 0;
