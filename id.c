@@ -639,26 +639,32 @@ void Freq_Checker (struct cipherdata *Cipher)
 	Basic_Analysis(Cipher);
 
 	char Plain_Char [7] = {'e', 't', 'a', 'o', 'i', 'n', 'h'};
-	int Plain_Freq [7] = {120, 91, 81, 77, 73, 70, 59};			// Multiplied by 1000 so integers
-	
-	int Tolerance = 5;
-	int Freq = 0;
+	int Plain_Freq [7] = {1200, 910, 810, 770, 730, 700, 590};		// Multiply by 10000 so integers, no float required
+	int Tolerance = 50;
+	int Freq, Exp_Freq_Lower, Exp_Freq_Upper = 0;
 
 	int n, m = 0;
 
+	//  Cycle through possible characters
 	for (n = 0; n < 7; n++)
 	{
+		Exp_Freq_Lower = Plain_Freq[n] - Tolerance;
+		Exp_Freq_Upper = Plain_Freq[n] + Tolerance;
+		//  Cycle through cipher key characters
 		for (m = 0; m < (*Cipher).keysize; m++)
 			{
-				Freq = (*Cipher).frequency[m] / (*Cipher).ciphersize;
-				If ( abs(Freq - Plain_Freq[n]) <= Tolerance )
+				Freq = ( 10000 * (*Cipher).frequency[m] ) / (*Cipher).ciphersize;
+				if ( Error_Trap(Freq, Exp_Freq_Lower, Exp_Freq_Upper) == 1 )
 				{
-					(*Cipher).plainchar(m) = Plain_Char[n];
+					(*Cipher).plainchar[m] = Plain_Char[n];
+					printf("DEBUG - %c is %c\n", (*Cipher).cipherchar[m], (*Cipher).plainchar[m]);
+					printf("DEBUG - Freq %d\t Exp_Freq_Lower %d\t Exp_Freq_Upper %d\t\n", Freq, Exp_Freq_Lower, Exp_Freq_Upper);
 					break;
 				}
 			}
 	}
-	
+
+	Display_Plaintext(Cipher);
 	printf("... and then a miracle happens.\n");	
 }
 
@@ -684,6 +690,9 @@ void Display_Plaintext(struct cipherdata *Cipher)
 				break;
 			}
 		}
+		//  No match, go with cipher text.
+		if ( (*Cipher).plaintextptr[n] == 0 )
+			(*Cipher).plaintextptr[n] = (*Cipher).ciphertextptr[n];
 	}
 
 	n = 0;
