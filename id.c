@@ -616,6 +616,8 @@ void Freq_Checker (struct cipherdata *Cipher)
 //		Within tolerance?
 //			If so make assignment, break and move to next character in frequency key (assumes monophonic simiple substitution)
 //			If not, move to next character in cipher key
+//  Above does not work in practice - texts too different from "ideal" frequencies; need to establish several candidates for each cipher char
+//  and test each one.  Wheels.  So a common letter (>10%) should be tested for e AND t, then expand tolerance and test others.
 //  
 //  If minimum assigned
 //	Generate plain text
@@ -640,7 +642,7 @@ void Freq_Checker (struct cipherdata *Cipher)
 
 	char Plain_Char [7] = {'e', 't', 'a', 'o', 'i', 'n', 'h'};
 	int Plain_Freq [7] = {1200, 910, 810, 770, 730, 700, 590};		// Multiply by 10000 so integers, no float required
-	int Tolerance = 75;
+	int Tolerance = 150;
 	int Freq, Exp_Freq_Lower, Exp_Freq_Upper = 0;
 
 	int n, m = 0;
@@ -654,7 +656,7 @@ void Freq_Checker (struct cipherdata *Cipher)
 		for (m = 0; m < (*Cipher).keysize; m++)
 			{
 				Freq = ( 10000 * (*Cipher).frequency[m] ) / (*Cipher).ciphersize;
-				if ( Error_Trap(Freq, Exp_Freq_Lower, Exp_Freq_Upper) == 1 )
+				if ( ( Error_Trap(Freq, Exp_Freq_Lower, Exp_Freq_Upper) == 1 ) && ( (*Cipher).plainchar[m] == 0) )
 				{
 					(*Cipher).plainchar[m] = Plain_Char[n];
 					printf("DEBUG - %c is %c\n", (*Cipher).cipherchar[m], (*Cipher).plainchar[m]);
