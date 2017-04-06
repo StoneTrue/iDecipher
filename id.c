@@ -636,15 +636,16 @@ void Freq_Checker (struct cipherdata *Cipher)
 {
 	Basic_Analysis(Cipher);
 
-	char Plain_Char [7] = {'e', 't', 'a', 'o', 'i', 'n', 'h'};
+	char Plain_Char [7] = {'e', 't', 'a', 'o', 'i', 'n', 'h'};		// TO DO:  Will be file read eventually for characters & plain frequencies
 	int Plain_Freq [7] = {1200, 910, 810, 770, 730, 700, 590};		// Multiply by 10000 so integers, no float required
-	int Tolerance = 150;
+	int Tolerance = 270;							// TO DO:  Make this an input
+	char Temp_Key [CharSetSizeGlob] = { 0 };
 	int Freq, Exp_Freq_Lower, Exp_Freq_Upper = 0;
-	int n, m = 0;
+	int n, m, c = 0;
 
-	// Array for possible keys
-	char Possible_Key [CharSetSizeGlob] [CharSetSizeGlob + 1];
-	for (n = 0; n < CharSetSizeGlob; n++)
+	// Array for possible keys - row for each cipher characters, column 0 is cipher, columns 1+ are possible plain; '0' for blanks
+	char Possible_Key [(*Cipher).keysize] [CharSetSizeGlob + 1];
+	for (n = 0; n < (*Cipher).keysize; n++)
 	{
 		for (m = 0; m < CharSetSizeGlob; m++)
 		{
@@ -652,35 +653,47 @@ void Freq_Checker (struct cipherdata *Cipher)
 		}
 	}		
 
-	//  Assign possible cipher characters to a plain character
+	//  Assign possible plain characters to a cipher character
 
-	//  Cycle through plain characters
-	for (n = 0; n < 7; n++)
+	//  Cycle through cipher characters
+	for (n = 0; n < (*Cipher).keysize; n++)
 	{
-		Exp_Freq_Lower = Plain_Freq[n] - Tolerance;
-		Exp_Freq_Upper = Plain_Freq[n] + Tolerance;
-		Possible_Key [n] [0] = Plain_Char[n];
-		//  Cycle through cipher key characters
-		for (m = 1; m < (*Cipher).keysize; m++)
+		Possible_Key [n] [0] = (*Cipher).cipherchar[n];
+		Freq = ( 10000 * (*Cipher).frequency[n] ) / (*Cipher).ciphersize;	
+		//  Cycle through possible plain characters
+		for (m = 0; m < 7; m++)
+		{
+			c = 1;
+			Exp_Freq_Lower = Plain_Freq[m] - Tolerance;
+			Exp_Freq_Upper = Plain_Freq[m] + Tolerance;
+			if ( Error_Trap(Freq, Exp_Freq_Lower, Exp_Freq_Upper) == 1 ) 
 			{
-				Freq = ( 10000 * (*Cipher).frequency[m] ) / (*Cipher).ciphersize;
-				if ( Error_Trap(Freq, Exp_Freq_Lower, Exp_Freq_Upper) == 1 ) 
-				{
-					Possible_Key[n] [m] = (*Cipher).cipherchar[m];
-					printf("DEBUG - %c\t could be %c\t\n", Possible_Key[n] [0], Possible_Key[n] [m]);
-				}
+				Possible_Key[n] [c] = Plain_Char[m];
+				c++;
 			}
+		}
 	}
 
+	// DEBUG print to stdout
+	for (n = 0; n < (*Cipher).keysize; n++)
+	{
+		for (m = 0; m < 7; m++)
+		{
+			if ( Possible_Key[n] [m + 1] != '0')
+				printf("DEBUG - %c\t could be %c\t\n", Possible_Key[n] [0], Possible_Key[n] [m + 1]);
+		}
+	}
+
+
 	//  Wheels:  build key from possibles, and display plaintext (later will check for plain words first - WORK IN PROGRESS
-	for (n = 0; n < CharSetSizeGlob; n ++)					// For each potential plain character
+	for (n = 0; n < (*Cipher).keysize; n ++)					// For each cipher character
 	{
 		if ( Possible_Key[n] [0] = '0') break;				// If at last row, break
 		{
 			for (m = 1; m < CharSetSizeGlob; m++)
 			{
-				if (Possible_Key[n] [m] = '0') break;
-				
+				if (Possible_Key[n] [m] = '0') break;		// If at last column, break?
+				Temp_Key[n] = Possible_Key[n] [m];				
 			}
 		}
 	}
