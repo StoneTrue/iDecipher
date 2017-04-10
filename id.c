@@ -638,13 +638,15 @@ void Freq_Checker (struct cipherdata *Cipher)
 
 	char Plain_Char [7] = {'e', 't', 'a', 'o', 'i', 'n', 'h'};		// TO DO:  Will be file read eventually for characters & plain frequencies
 	int Plain_Freq [7] = {1200, 910, 810, 770, 730, 700, 590};		// Multiply by 10000 so integers, no float required
-	int Tolerance = 270;							// TO DO:  Make this an input
+	int Tolerance = 150;							// TO DO:  Make this an input
 	char Temp_Key [CharSetSizeGlob] = { 0 };
 	int Freq, Exp_Freq_Lower, Exp_Freq_Upper = 0;
+	int Possible_Key_Index [ (*Cipher).keysize + 1 ];				//  Index array to track which column a row is on
 	int n, m, c = 0;
 
 	// Array for possible keys - row for each cipher characters, column 0 is cipher, columns 1+ are possible plain; '0' for blanks
 	char Possible_Key [(*Cipher).keysize] [CharSetSizeGlob + 1];
+
 	for (n = 0; n < (*Cipher).keysize; n++)
 	{
 		for (m = 0; m < CharSetSizeGlob; m++)
@@ -661,15 +663,16 @@ void Freq_Checker (struct cipherdata *Cipher)
 		Possible_Key [n] [0] = (*Cipher).cipherchar[n];
 		Freq = ( 10000 * (*Cipher).frequency[n] ) / (*Cipher).ciphersize;	
 		//  Cycle through possible plain characters
+		c = 1;
 		for (m = 0; m < 7; m++)
 		{
-			c = 1;
 			Exp_Freq_Lower = Plain_Freq[m] - Tolerance;
 			Exp_Freq_Upper = Plain_Freq[m] + Tolerance;
 			if ( Error_Trap(Freq, Exp_Freq_Lower, Exp_Freq_Upper) == 1 ) 
 			{
 				Possible_Key[n] [c] = Plain_Char[m];
 				c++;
+				printf("DEBUG - %c\t has ELF of %d, EUF of %d; %c has Freq of %d\n", Plain_Char[m], Exp_Freq_Lower, Exp_Freq_Upper, (*Cipher).cipherchar[n], Freq);
 			}
 		}
 	}
@@ -686,16 +689,18 @@ void Freq_Checker (struct cipherdata *Cipher)
 
 
 	//  Wheels:  build key from possibles, and display plaintext (later will check for plain words first - WORK IN PROGRESS
-	for (n = 0; n < (*Cipher).keysize; n ++)					// For each cipher character
+
+	for (n = 0; n <= (*Cipher).keysize; n++)
+		Possible_Key_Index [n] = 1;					// Initialize index
+
+	for (n = 0; n < (*Cipher).keysize; n ++)				// For each cipher character
 	{
-		if ( Possible_Key[n] [0] = '0') break;				// If at last row, break
+		if ( Possible_Key [n] [Possible_Key_Index[n]] != 0)
 		{
-			for (m = 1; m < CharSetSizeGlob; m++)
-			{
-				if (Possible_Key[n] [m] = '0') break;		// If at last column, break?
-				Temp_Key[n] = Possible_Key[n] [m];				
-			}
+			Temp_Key [n] = Possible_Key[n] [Possible_Key_Index[n]];
+			Possible_Key_Index[n] ++;	
 		}
+		else Possible_Key_Index[n] = 1;
 	}
 	printf("... and then a miracle happens.\n");	
 }
