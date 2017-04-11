@@ -688,20 +688,35 @@ void Freq_Checker (struct cipherdata *Cipher)
 	}
 
 
-	//  Wheels:  build key from possibles, and display plaintext (later will check for plain words first - WORK IN PROGRESS
+	//  Wheels:  build key from possibles, and display plaintext (later will check for plain words first) - WORK IN PROGRESS
 
 	for (n = 0; n <= (*Cipher).keysize; n++)
 		Possible_Key_Index [n] = 1;					// Initialize index
 
-	for (n = 0; n < (*Cipher).keysize; n ++)				// For each cipher character
+	int Row_Resets = 0;
+	while ( Row_Resets < (*Cipher).keysize )
 	{
-		if ( Possible_Key [n] [Possible_Key_Index[n]] != 0)
+		for (n = 0; n < (*Cipher).keysize; n++)				// For each cipher character
 		{
-			Temp_Key [n] = Possible_Key[n] [Possible_Key_Index[n]];
-			Possible_Key_Index[n] ++;	
+			if ( Possible_Key [n] [Possible_Key_Index[n]] != '0')		// If not at the end of a "row"
+			{
+				Temp_Key [n] = Possible_Key[n] [Possible_Key_Index[n]];
+				Possible_Key_Index[n]++;	
+			}
+			else 
+			{
+				Row_Resets++;			
+				Possible_Key_Index[n] = 1;
+				Possible_Key_Index[n+1]++;
+			}
 		}
-		else Possible_Key_Index[n] = 1;
-	}
+		printf("DEBUG - Temp Key: ");
+		for (n = 0; n< (*Cipher).keysize; n++)
+		{
+			printf("%c", Temp_Key[n]);
+		}
+		printf("\n");
+	}	
 	printf("... and then a miracle happens.\n");	
 }
 
