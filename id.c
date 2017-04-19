@@ -694,7 +694,7 @@ void Freq_Checker (struct cipherdata *Cipher)
 		Possible_Key_Index [n] = 1;					// Initialize index
 
 	int Row_Resets = 0;
-	while ( Row_Resets < (*Cipher).keysize )
+	while ( Row_Resets < 100)
 	{
 		for (n = 0; n < (*Cipher).keysize; n++)				// For each cipher character
 		{
