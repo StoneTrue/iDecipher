@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define CharSetSizeGlob 128		// ASCII character set size assumed
+#define CharSetSizeGlob 20		// ASCII character set size assumed
 
 struct cipherdata {			// Cipher data structure:  size and pointers to ciphertext / plaintext on heap; move to .h file
 	int ciphersize;
@@ -645,11 +645,11 @@ void Freq_Checker (struct cipherdata *Cipher)
 	int n, m, c = 0;
 
 	// Array for possible keys - row for each cipher characters, column 0 is cipher, columns 1+ are possible plain; '0' for blanks
-	char Possible_Key [(*Cipher).keysize] [CharSetSizeGlob + 1];
+	char Possible_Key [(*Cipher).keysize] [CharSetSizeGlob + 2];
 
 	for (n = 0; n < (*Cipher).keysize; n++)
 	{
-		for (m = 0; m < CharSetSizeGlob; m++)
+		for (m = 0; m <= (CharSetSizeGlob ); m++)
 		{
 			Possible_Key [n] [m] = '0';
 		}
@@ -705,7 +705,11 @@ void Freq_Checker (struct cipherdata *Cipher)
 			}
 			else 
 			{
-				Row_Resets++;			
+				if ( Possible_Key [n] [Possible_Key_Index[CharSetSizeGlob + 1]] == 0)				
+				{
+					Possible_Key [n] [Possible_Key_Index[CharSetSizeGlob + 1]] = 1;				
+					Row_Resets++;			
+				}				
 				Possible_Key_Index[n] = 1;
 				Possible_Key_Index[n+1]++;
 			}
