@@ -642,7 +642,8 @@ void Freq_Checker (struct cipherdata *Cipher)
 	char Temp_Key [CharSetSizeGlob] = { 0 };
 	int Freq, Exp_Freq_Lower, Exp_Freq_Upper = 0;
 	int Possible_Key_Index [ (*Cipher).keysize + 1 ];				//  Index array to track which column a row is on
-	int n, m, c = 0;
+	int Possible_Keysize;
+	int n, m, c, d = 0;
 
 	// Array for possible keys - row for each cipher characters, column 0 is cipher, columns 1+ are possible plain; '0' for blanks
 	char Possible_Key [(*Cipher).keysize] [CharSetSizeGlob + 1];
@@ -660,21 +661,28 @@ void Freq_Checker (struct cipherdata *Cipher)
 	//  Cycle through cipher characters
 	for (n = 0; n < (*Cipher).keysize; n++)
 	{
-		Possible_Key [n] [0] = (*Cipher).cipherchar[n];
 		Freq = ( 10000 * (*Cipher).frequency[n] ) / (*Cipher).ciphersize;	
 		//  Cycle through possible plain characters
 		c = 1;
-		for (m = 0; m < 7; m++)
+		for (m = 0; m < 7; m++)					// Update 7 with read size of Freq file
 		{
 			Exp_Freq_Lower = Plain_Freq[m] - Tolerance;
 			Exp_Freq_Upper = Plain_Freq[m] + Tolerance;
 			if ( Error_Trap(Freq, Exp_Freq_Lower, Exp_Freq_Upper) == 1 ) 
 			{
-				Possible_Key[n] [c] = Plain_Char[m];
-				c++;
+				Possible_Key[d] [c] = Plain_Char[m];
 				printf("DEBUG - %c\t has ELF of %d, EUF of %d; %c has Freq of %d\n", Plain_Char[m], Exp_Freq_Lower, Exp_Freq_Upper, (*Cipher).cipherchar[n], Freq);
+				printf("DEBUG - %c\t has ELF of %d, EUF of %d; %c has Freq of %d\n", Possible_Key[d] [c], Exp_Freq_Lower, Exp_Freq_Upper, Possible_Key[d] [0], Freq);				
+				if (c = 1)
+				{
+					Possible_Key[d] [0] = (*Cipher).cipherchar[n];
+					d++;
+				}
+				c++;
+				
 			}
 		}
+	Possible_Keysize = d + 1;
 	}
 
 	// DEBUG print to stdout
@@ -689,16 +697,15 @@ void Freq_Checker (struct cipherdata *Cipher)
 
 
 	//  Wheels:  build key from possibles, and display plaintext (later will check for plain words first) - WORK IN PROGRESS
-	//  Basic idea - when ALL rows have reset at least once, have been through all keys; problem is "short" rows reset many times
-	//  Solution - an array for Row_Resets
+	//  How to deal with rows with NO plain characters in them?  Only have cipher char that pass frequency test in possible key array
 
 	for (n = 0; n <= (*Cipher).keysize; n++)
-		Possible_Key_Index [n] = 1;					// Initialize index
+		Possible_Key_Index [n] = 1;						// Initialize key index
 
-	int Row_Resets = 0;
-	while ( Row_Resets < (*Cipher).keysize)
+	n = 0;
+	while ( Possible_Key [Possible_Keysize - 1] [Possible_Key_Index[n]] != '0')
 	{
-		for (n = 0; n < (*Cipher).keysize; n++)				// For each cipher character
+		for (n = 0; n < Possible_Keysize; n++)					// For each cipher character in key
 		{
 			if ( Possible_Key [n] [Possible_Key_Index[n]] != '0')		// If not at the end of a "row"
 			{
@@ -707,15 +714,11 @@ void Freq_Checker (struct cipherdata *Cipher)
 			}
 			else 
 			{
-				if ( Possible_Key [n] [Possible_Key_Index[CharSetSizeGlob + 1]] == 0)				
-				{
-					Possible_Key [n] [Possible_Key_Index[CharSetSizeGlob + 1]] = 1;				
-					Row_Resets++;			
-				}				
 				Possible_Key_Index[n] = 1;
 				Possible_Key_Index[n+1]++;
 			}
 		}
+
 		printf("DEBUG - Temp Key: ");
 		for (n = 0; n< (*Cipher).keysize; n++)
 		{
